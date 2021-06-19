@@ -1,26 +1,28 @@
 package com.leonardo.arkansasproject.database;
 
+import io.smallrye.mutiny.Uni;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 public interface Repository<O, T> {
 
-    void commit(O obj);
+    Uni<Void> commit(O obj);
 
-    Optional<O> read(T id);
+    Uni<O> read(T id);
 
-    void update(O obj);
+    Uni<O> update(O obj);
 
-    void delete(O obj);
+    Uni<Void> delete(O obj);
 
-    Optional<O> findAndDelete(T id);
+    Uni<O> deleteById(T id);
 
-    List<O> findAll();
+    Uni<List<O>> findAll();
 
-    List<O> findAll(Predicate<O> predicate);
+    Uni<List<O>> findAll(Predicate<O> predicate);
 
-    boolean exists(T id);
+    Uni<Boolean> exists(T id);
 
     Class<O> getTarget();
 

@@ -9,12 +9,12 @@ public enum ReportProcessingState {
 
     @SerializedName("ATTACH_STEP_BY_STEP")
     ATTACH_STEP_BY_STEP(1, "Anexar passo a passo"),
-    @SerializedName("ATTACH_EVIDENCES")
-    ATTACH_EVIDENCES(2, "Anexar evidências"),
     @SerializedName("ATTACH_EXPECTED_RESULT")
-    ATTACH_EXPECTED_RESULT(3, "Anexar resultado esperado"),
+    ATTACH_EXPECTED_RESULT(2, "Anexar resultado esperado"),
     @SerializedName("ATTACH_ACTUAL_RESULT")
-    ATTACH_ACTUAL_RESULT(4, "Anexar resultado atual");
+    ATTACH_ACTUAL_RESULT(3, "Anexar resultado atual"),
+    @SerializedName("ATTACH_SERVER")
+    ATTACH_SERVER(4, "Anexar servidor");
 
     @Getter
     private final int position;
@@ -32,5 +32,13 @@ public enum ReportProcessingState {
 
     public int next() {
         return this.position + 1;
+    }
+
+    public boolean hasNext() {
+        return Arrays.stream(values()).anyMatch(state -> state.getPosition() > this.position);
+    }
+
+    public ReportProcessingState nextState() {
+        return fromPosition(next());
     }
 }

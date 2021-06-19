@@ -4,12 +4,11 @@ import com.google.inject.Inject;
 import com.leonardo.arkansasproject.Bot;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
+import com.leonardo.arkansasproject.utils.Checker;
 import com.leonardo.arkansasproject.utils.TemplateMessages;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -28,11 +27,14 @@ public class ReportCmdExecutor implements Executor {
     @Override
     public void exec(MessageReceivedEvent mre, User sender, String[] args) {
         final MessageChannel channel = mre.getChannel();
-        if(mre.isWebhookMessage() || mre.isFromGuild()) return;
+        if (mre.isWebhookMessage() || mre.isFromGuild()) return;
         final Cache<String, ReportProcessing> processing = this.bot.REPORT_PROCESSING;
-        final boolean match = processing.getAll(new HashSet<>()).keySet().stream().anyMatch(userId -> userId.equals(sender.getId()));
+        final boolean match = processing.getAll(new HashSet<>()).keySet().stream()
+                                        .anyMatch(userId -> userId.equalsIgnoreCase(sender.getId()));
         if (match) {
-            channel.sendMessage(sender.getAsMention() + ", você já está fazendo um relatório. Aguarde alguns segundos ou complete o existente.").queue();
+            channel.sendMessage(sender.getAsMention() +
+                                ", você já está fazendo um relatório. Aguarde alguns segundos ou complete o existente.")
+                   .queue();
             return;
         }
         if (args.length == 0) {
@@ -40,7 +42,7 @@ public class ReportCmdExecutor implements Executor {
             return;
         }
         final String title = String.join(" ", args);
-        if (title.length() < 6 || title.length() > 40) {
+        if (!Checker.characterLength(title)) {
             channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed()).queue();
             return;
         }
@@ -51,11 +53,17 @@ public class ReportCmdExecutor implements Executor {
         final MessageBuilder messageBuilder = new MessageBuilder();
         builder.setColor(new Color(59, 56, 209));
         builder.setAuthor(sender.getAsTag() + " (" + sender.getId() + ")");
-        builder.getDescriptionBuilder().insert(0,  "[" + title + "](https://github.com/LeonardoCod3r)");
-        messageBuilder.setContent(sender.getAsMention() + ", explique passo a passo a ocorrência do bug. Por fim, digite \"PRONTO\".");
+        final StringBuilder descBuilder = builder.getDescriptionBuilder();
+        descBuilder
+                .append("\n\n")
+                .append("[")
+                .append(title)
+                .append("](https://github.com/LeonardoCod3r) \n")
+                .append("\n");
+        messageBuilder.setContent(
+                sender.getAsMention() + ", explique passo a passo a ocorrência do bug. Por fim, digite \"PRONTO\".");
         messageBuilder.setEmbed(builder.build());
-        final ReportProcessing reportProcessing = new ReportProcessing();
-        reportProcessing.setReport(report);
+        final ReportProcessing reportProcessing = new ReportProcessing(report, this.bot);
         reportProcessing.setMessage(channel.sendMessage(messageBuilder.build()).complete());
         processing.put(sender.getId(), reportProcessing);
     }

@@ -1,12 +1,19 @@
 package com.leonardo.arkansasproject.database;
 
+import io.smallrye.mutiny.Uni;
+
 public interface Service<O, I> {
-    void create(O object);
 
-    O read(I id);
+    Uni<O> create(O object);
 
-    void update(O object);
+    Uni<O> read(I id);
 
-    void delete(O object);
+    Uni<O> update(O object);
+
+    Uni<Void> delete(O object);
+
+    Uni<O> deleteById(I id);
+
+    Uni<Boolean> exists(I id);
 
 }

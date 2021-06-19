@@ -4,16 +4,18 @@ import com.google.inject.Inject;
 import com.leonardo.arkansasproject.Bot;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.MessageBuilder;
+import com.leonardo.arkansasproject.utils.Checker;
+import com.leonardo.arkansasproject.utils.TemplateMessages;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
+import java.util.Arrays;
+import java.util.regex.Pattern;
 
 public class MessageReceivedListener implements EventListener {
 
@@ -25,28 +27,52 @@ public class MessageReceivedListener implements EventListener {
         if (genericEvent instanceof MessageReceivedEvent) {
             final MessageReceivedEvent event = (MessageReceivedEvent) genericEvent;
             final Message eventMessage = event.getMessage();
-            if(eventMessage.isFromGuild() || eventMessage.isWebhookMessage()) return;
+            final String contentRaw = eventMessage.getContentRaw();
+            if (Checker.isBotCommand(contentRaw.split(" ")[0])) return;
+            if (eventMessage.isFromGuild() || eventMessage.isWebhookMessage()) return;
             final User author = event.getAuthor();
             this.bot.REPORT_PROCESSING.forEach(entry -> {
-                final String userId = entry.getKey();
                 final ReportProcessing reportProcessing = entry.getValue();
-                final Message message = reportProcessing.getMessage();
-                if (userId.equals(author.getId()) && message.getChannel().getIdLong() == event.getChannel().getIdLong()) {
-
-                        final EmbedBuilder builder = new EmbedBuilder();
-                        final Report report = reportProcessing.getReport();
-                        builder.setColor(new Color(59, 56, 209));
-                        builder.setAuthor(author.getAsTag() + " (" + author.getId() + ")");
-                        builder.getDescriptionBuilder().insert(0,  "[" + report.getTitle() + "](https://github.com/LeonardoCod3r)");
-                        switch (reportProcessing.getProcessingState()) {
-                            case ATTACH_STEP_BY_STEP:
-                                if (eventMessage.getContentRaw().equals("pronto")) {
-
-                                } else {
-
-                                }
+                final MessageChannel channel = eventMessage.getChannel();
+                if (entry.getKey().equals(author.getId()) &&
+                    channel.getIdLong() == event.getChannel().getIdLong()) {
+                    final Report report = reportProcessing.getReport();
+                    eventMessage.delete().queue();
+                    switch (reportProcessing.getProcessingState()) {
+                        case ATTACH_STEP_BY_STEP:
+                            if (!contentRaw.equalsIgnoreCase("pronto")) {
+                                Arrays.stream(contentRaw.split("\n")).forEach(s -> {
+                                   if (!s.isEmpty()) report.appendStep(s);
+                                });
+                                reportProcessing.updateAllFields();
+                                reportProcessing.updateMessage();
                                 break;
-                        }
+                            }
+                            reportProcessing.next();
+                            break;
+                        case ATTACH_EXPECTED_RESULT:
+                            if (!Checker.characterLength(contentRaw, 60)) {
+                                channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed())
+                                       .queue();
+                                return;
+                            }
+                            report.setExpectedOutcome(contentRaw);
+                            reportProcessing.next();
+                            break;
+                        case ATTACH_ACTUAL_RESULT:
+                            if (!Checker.characterLength(contentRaw, 60)) {
+                                channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed())
+                                       .queue();
+                                return;
+                            }
+                            report.setActualResult(contentRaw);
+                            reportProcessing.next();
+                            break;
+                        case ATTACH_SERVER:
+                            report.setServerName(contentRaw);
+                            reportProcessing.next();
+                            break;
+                    }
                 }
             });
         }

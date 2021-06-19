@@ -1,15 +1,18 @@
 package com.leonardo.arkansasproject.database;
 
 import com.google.inject.Inject;
+import io.smallrye.mutiny.Uni;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.reactive.mutiny.Mutiny;
+import org.hibernate.reactive.mutiny.Mutiny.Session;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -20,92 +23,55 @@ public abstract class JpaRepository<O, T extends Serializable> implements Reposi
     @Inject
     @Setter(AccessLevel.PRIVATE)
     @Getter
-    private SessionFactory sessionFactory;
+    private Mutiny.SessionFactory sessionFactory;
 
     public JpaRepository(Class<O> target) {
         this.target = target;
     }
 
-    @Override
-    public void commit(O obj) {
+    public Uni<Void> commit(O obj) {
         final Session session = sessionFactory.openSession();
-        session.getTransaction().begin();
-        session.save(obj);
-        session.getTransaction().commit();
-        session.close();
+        return session.persist(obj).invoke(session::close);
     }
 
-    @Override
-    public Optional<O> read(T id) {
-        Optional<O> opt;
-        final Session s = sessionFactory.openSession();
-        s.getTransaction().begin();
-        try {
-            final O obj = s.get(target, id);
-            s.getTransaction().commit();;
-            opt = Optional.of(obj);
-        } catch (Exception e) {
-            System.out.println("Ocorreu um erro ao requisitar no banco de dados a entidade " + getTarget().getSimpleName() + " de id " + id);
-            s.getTransaction().rollback();
-            opt = Optional.empty();
-        } finally {
-            s.close();
-        }
-        return opt;
-    }
-
-    @Override
-    public void update(O obj) {
+    public Uni<O> read(T id) {
         final Session session = sessionFactory.openSession();
-        session.getTransaction().begin();
-        session.update(obj);
-        session.getTransaction().commit();
-        session.close();
+        return session.find(getTarget(), id).invoke(session::close);
     }
 
-    @Override
-    public void delete(O obj) {
+
+    public Uni<O> update(O obj) {
         final Session session = sessionFactory.openSession();
-        session.getTransaction().begin();
-        session.remove(obj);
-        session.getTransaction().commit();
-        session.close();
+        return session.merge(obj).invoke(session::close);
     }
 
-    @Override
-    public Optional<O> findAndDelete(T id) {
+    public Uni<Void> delete(O obj) {
         final Session session = sessionFactory.openSession();
-        session.getTransaction().begin();
-        final Optional<O> o = Optional.of(session.load(target, id));
-        o.ifPresent(session::delete);
-        session.getTransaction().commit();
-        session.close();
-        return o;
+        return session.remove(obj).invoke(session::close);
     }
 
-    @Override
-    public List<O> findAll() {
-        return sessionFactory.openSession().createQuery("FROM " + target.getName(), target).getResultList();
-    }
-
-    @Override
-    public List<O> findAll(Predicate<O> predicate) {
-        return findAll().stream().filter(predicate).collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean exists(T id) {
+    public Uni<O> deleteById(T id) {
         final Session session = sessionFactory.openSession();
-        session.getTransaction().begin();
-        boolean result = false;
-        try {
-            session.load(target, id);
-            result = true;
-        } catch (Exception ignored) {
-        }
-        session.getTransaction().commit();
-        session.close();
-        return result;
+        return read(id).call(session::remove).invoke(session::close);
+    }
+
+    public Uni<List<O>> findAll() {
+        final Session session = sessionFactory.openSession();
+        return session.createQuery("FROM " + target.getName(), target).getResultList().invoke(session::close);
+    }
+
+    public Uni<List<O>> findAll(Predicate<O> predicate) {
+        return findAll().map(list -> list.stream().filter(predicate).collect(Collectors.toList()));
+    }
+
+    public Uni<Boolean> exists(T id) {
+        final Session session = sessionFactory.openSession();
+        final CriteriaBuilder builder = sessionFactory.getCriteriaBuilder();
+        final CriteriaQuery<O> query = builder.createQuery(getTarget());
+        final Root<O> root = query.from(getTarget());
+        query.select(root).where(builder.equal(root.get("id"), id));
+        final Uni<List<O>> listUni = session.createQuery(query).getResultList();
+        return listUni.map(List::isEmpty);
     }
 
 }
