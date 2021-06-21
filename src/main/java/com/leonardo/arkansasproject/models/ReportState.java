@@ -9,8 +9,6 @@ public enum ReportState {
     ARCHIVED("Arquivado"),
     @SerializedName("ACTIVE")
     ACTIVE("Ativo"),
-    @SerializedName("ACCEPTED")
-    ACCEPTED("Aceito"),
     @SerializedName("REFUSED")
     REFUSED("Recusado");
 

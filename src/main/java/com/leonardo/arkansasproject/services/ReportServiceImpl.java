@@ -13,32 +13,32 @@ public class ReportServiceImpl implements ReportService {
     private ReportRepository repository;
 
     @Override
-    public Uni<Report> create(Report object) {
-        return null;
+    public Uni<Void> create(Report object) {
+        return this.repository.commit(object);
     }
 
     @Override
     public Uni<Report> read(Long id) {
-        return null;
+        return this.repository.read(id);
     }
 
     @Override
     public Uni<Report> update(Report object) {
-        return null;
+        return this.repository.update(object);
     }
 
     @Override
     public Uni<Void> delete(Report object) {
-        return null;
+        return this.repository.delete(object);
     }
 
     @Override
     public Uni<Report> deleteById(Long id) {
-        return null;
+        return this.repository.deleteById(id);
     }
 
     @Override
     public Uni<Boolean> exists(Long id) {
-        return null;
+        return this.repository.exists(id);
     }
 }

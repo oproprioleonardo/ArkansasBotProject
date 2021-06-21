@@ -30,34 +30,27 @@ public abstract class JpaRepository<O, T extends Serializable> implements Reposi
     }
 
     public Uni<Void> commit(O obj) {
-        final Session session = sessionFactory.openSession();
-        return session.persist(obj).invoke(session::close);
+        return sessionFactory.withTransaction((session, transaction) -> session.persist(obj));
     }
 
     public Uni<O> read(T id) {
-        final Session session = sessionFactory.openSession();
-        return session.find(getTarget(), id).invoke(session::close);
+        return sessionFactory.withTransaction((session, transaction) -> session.find(getTarget(), id));
     }
 
-
     public Uni<O> update(O obj) {
-        final Session session = sessionFactory.openSession();
-        return session.merge(obj).invoke(session::close);
+        return sessionFactory.withTransaction((session, transaction) -> session.merge(obj));
     }
 
     public Uni<Void> delete(O obj) {
-        final Session session = sessionFactory.openSession();
-        return session.remove(obj).invoke(session::close);
+        return sessionFactory.withTransaction((session, transaction) -> session.remove(obj));
     }
 
     public Uni<O> deleteById(T id) {
-        final Session session = sessionFactory.openSession();
-        return read(id).call(session::remove).invoke(session::close);
+        return read(id).call(report -> sessionFactory.withTransaction((session, transaction) -> session.remove(report)));
     }
 
     public Uni<List<O>> findAll() {
-        final Session session = sessionFactory.openSession();
-        return session.createQuery("FROM " + target.getName(), target).getResultList().invoke(session::close);
+        return sessionFactory.withTransaction((session, transaction) -> session.createQuery("FROM " + target.getName(), target).getResultList());
     }
 
     public Uni<List<O>> findAll(Predicate<O> predicate) {
@@ -65,13 +58,13 @@ public abstract class JpaRepository<O, T extends Serializable> implements Reposi
     }
 
     public Uni<Boolean> exists(T id) {
-        final Session session = sessionFactory.openSession();
-        final CriteriaBuilder builder = sessionFactory.getCriteriaBuilder();
-        final CriteriaQuery<O> query = builder.createQuery(getTarget());
-        final Root<O> root = query.from(getTarget());
-        query.select(root).where(builder.equal(root.get("id"), id));
-        final Uni<List<O>> listUni = session.createQuery(query).getResultList();
-        return listUni.map(List::isEmpty);
+        return sessionFactory.withTransaction((session, transaction) -> {
+            final CriteriaBuilder builder = sessionFactory.getCriteriaBuilder();
+            final CriteriaQuery<O> query = builder.createQuery(getTarget());
+            final Root<O> root = query.from(getTarget());
+            query.select(root).where(builder.equal(root.get("id"), id));
+            return session.createQuery(query).getResultList().map(List::isEmpty);
+        });
     }
 
 }

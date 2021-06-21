@@ -4,7 +4,7 @@ import io.smallrye.mutiny.Uni;
 
 public interface Service<O, I> {
 
-    Uni<O> create(O object);
+    Uni<Void> create(O object);
 
     Uni<O> read(I id);
 

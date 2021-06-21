@@ -17,7 +17,6 @@
             <property name="hibernate.vertx.pool.connect_timeout" value="20000"/>
             <property name="javax.persistence.schema-generation.database.action" value="create"/>
             <property name="hibernate.format_sql" value="true"/>
-            <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.use_sql_comments" value="true"/>
             <property name="net.sf.ehcache.configurationResourceName" value="/ehcache.xml"/>
 

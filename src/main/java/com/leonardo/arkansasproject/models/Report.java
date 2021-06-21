@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @AllArgsConstructor
@@ -25,6 +26,7 @@ public class Report implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
     private String userId;
     @CreationTimestamp
@@ -35,16 +37,16 @@ public class Report implements Serializable {
     @LazyCollection(value = LazyCollectionOption.FALSE)
     private List<String> steps = Lists.newArrayList();
     @ElementCollection
-    @CollectionTable(name = "reports_attachments",
+    @CollectionTable(name = "attachment_mapping",
                      joinColumns = {@JoinColumn(name = "attachment_id", referencedColumnName = "id")})
-    @MapKeyColumn(name = "attachment_name")
-    @Column(name = "url")
-    private HashMap<String, String> attachments = Maps.newHashMap();
+    @MapKeyColumn(name = "attachment_name", length = 80)
+    @Column(name = "attachment_url")
+    private Map<String, String> attachments = Maps.newHashMap();
     private String expectedOutcome;
     private String actualResult;
     private String serverName;
     @Enumerated
-    private ReportState state;
+    private ReportState state = ReportState.ACTIVE;
 
     public User getAuthor() {
         return Bot.getInstance().getJda().retrieveUserById(userId).complete();

@@ -15,7 +15,7 @@ import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.regex.Pattern;
+import java.util.concurrent.TimeUnit;
 
 public class MessageReceivedListener implements EventListener {
 
@@ -29,7 +29,7 @@ public class MessageReceivedListener implements EventListener {
             final Message eventMessage = event.getMessage();
             final String contentRaw = eventMessage.getContentRaw();
             if (Checker.isBotCommand(contentRaw.split(" ")[0])) return;
-            if (eventMessage.isFromGuild() || eventMessage.isWebhookMessage()) return;
+            if (eventMessage.isWebhookMessage()) return;
             final User author = event.getAuthor();
             this.bot.REPORT_PROCESSING.forEach(entry -> {
                 final ReportProcessing reportProcessing = entry.getValue();
@@ -37,12 +37,12 @@ public class MessageReceivedListener implements EventListener {
                 if (entry.getKey().equals(author.getId()) &&
                     channel.getIdLong() == event.getChannel().getIdLong()) {
                     final Report report = reportProcessing.getReport();
-                    eventMessage.delete().queue();
+                    if (eventMessage.isFromGuild()) eventMessage.delete().queue();
                     switch (reportProcessing.getProcessingState()) {
                         case ATTACH_STEP_BY_STEP:
                             if (!contentRaw.equalsIgnoreCase("pronto")) {
                                 Arrays.stream(contentRaw.split("\n")).forEach(s -> {
-                                   if (!s.isEmpty()) report.appendStep(s);
+                                    if (!s.isEmpty()) report.appendStep(s);
                                 });
                                 reportProcessing.updateAllFields();
                                 reportProcessing.updateMessage();
@@ -53,7 +53,7 @@ public class MessageReceivedListener implements EventListener {
                         case ATTACH_EXPECTED_RESULT:
                             if (!Checker.characterLength(contentRaw, 60)) {
                                 channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed())
-                                       .queue();
+                                       .complete().delete().delay(20, TimeUnit.SECONDS).queue();
                                 return;
                             }
                             report.setExpectedOutcome(contentRaw);
@@ -62,7 +62,7 @@ public class MessageReceivedListener implements EventListener {
                         case ATTACH_ACTUAL_RESULT:
                             if (!Checker.characterLength(contentRaw, 60)) {
                                 channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed())
-                                       .queue();
+                                       .complete().delete().delay(20, TimeUnit.SECONDS).queue();
                                 return;
                             }
                             report.setActualResult(contentRaw);

@@ -16,6 +16,7 @@ import org.ehcache.Cache;
 
 import java.awt.*;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 @CommandExecutor(aliases = {"report", "reportar"})
 @NoArgsConstructor
@@ -27,7 +28,7 @@ public class ReportCmdExecutor implements Executor {
     @Override
     public void exec(MessageReceivedEvent mre, User sender, String[] args) {
         final MessageChannel channel = mre.getChannel();
-        if (mre.isWebhookMessage() || mre.isFromGuild()) return;
+        if (mre.isWebhookMessage()) return;
         final Cache<String, ReportProcessing> processing = this.bot.REPORT_PROCESSING;
         final boolean match = processing.getAll(new HashSet<>()).keySet().stream()
                                         .anyMatch(userId -> userId.equalsIgnoreCase(sender.getId()));
@@ -38,12 +39,14 @@ public class ReportCmdExecutor implements Executor {
             return;
         }
         if (args.length == 0) {
-            channel.sendMessage(TemplateMessages.NO_ARGS.getMessageEmbed()).queue();
+            channel.sendMessage(TemplateMessages.NO_ARGS.getMessageEmbed()).complete().delete()
+                   .delay(20, TimeUnit.SECONDS).queue();
             return;
         }
         final String title = String.join(" ", args);
         if (!Checker.characterLength(title)) {
-            channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed()).queue();
+            channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed()).complete().delete()
+                   .delay(20, TimeUnit.SECONDS).queue();
             return;
         }
         final Report report = new Report();

@@ -18,15 +18,15 @@ public class Checker {
     }
 
     public static boolean characterLength(String text) {
-        return text.length() > 6 && text.length() < 40;
+        return text.length() >= 6 && text.length() <= 40;
     }
 
     public static boolean characterLength(String text, int min, int max) {
-        return text.length() > min && text.length() < max;
+        return text.length() >= min && text.length() <= max;
     }
 
     public static boolean characterLength(String text, int max) {
-        return text.length() > 6 && text.length() < max;
+        return text.length() >= 6 && text.length() <= max;
     }
 
 }

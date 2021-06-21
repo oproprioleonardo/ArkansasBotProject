@@ -3,7 +3,12 @@ package com.leonardo.arkansasproject.models.suppliers;
 import com.google.common.collect.Lists;
 import com.leonardo.arkansasproject.Bot;
 import com.leonardo.arkansasproject.models.Report;
-import lombok.*;
+import com.leonardo.arkansasproject.services.ReportService;
+import io.smallrye.mutiny.Uni;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -20,13 +25,13 @@ public class ReportProcessing {
     private final Report report;
     private final Bot bot;
     private final List<String> alreadyPut = Lists.newArrayList();
+    private final EmbedBuilder builder;
+    private final StringBuilder descBuilder;
     @Getter
     @Setter
     private ReportProcessingState processingState = ReportProcessingState.ATTACH_STEP_BY_STEP;
     @Setter
     private Message message;
-    private final EmbedBuilder builder;
-    private final StringBuilder descBuilder;
 
     public ReportProcessing(Report report, Bot bot) {
         this.report = report;
@@ -55,7 +60,7 @@ public class ReportProcessing {
         });
     }
 
-    public void updateExpectedResultField() {
+    private void updateExpectedResultField() {
         if (report.getExpectedOutcome() != null) {
             if (builder.getFields().stream().noneMatch(field -> Objects.requireNonNull(field.getName())
                                                                        .equalsIgnoreCase("Resultado esperado"))) {
@@ -64,7 +69,7 @@ public class ReportProcessing {
         }
     }
 
-    public void updateActualResultField() {
+    private void updateActualResultField() {
         if (report.getActualResult() != null) {
             if (builder.getFields().stream().noneMatch(field -> Objects.requireNonNull(field.getName())
                                                                        .equalsIgnoreCase("Resultado real"))) {
@@ -73,7 +78,7 @@ public class ReportProcessing {
         }
     }
 
-    public void updateServerField() {
+    private void updateServerField() {
         if (report.getServerName() != null) {
             if (builder.getFields().stream().noneMatch(field -> Objects.requireNonNull(field.getName())
                                                                        .equalsIgnoreCase("Anomalia ocorrida em"))) {
@@ -93,13 +98,19 @@ public class ReportProcessing {
         this.updateAllFields();
         this.updateMessage();
         if (!this.processingState.hasNext()) {
-            this.bot.REPORT_PROCESSING.remove(report.getUserId());
             final MessageChannel channel = this.message.getChannel();
-            this.message.delete().queue();
-            channel.sendMessage(new MessageBuilder()
-                                        .setEmbed(builder.build())
-                                        .setContent("Parabéns! Você registrou o bug com sucesso.").build())
-                   .queue();
+            this.save().invoke(() -> {
+                                       channel.sendMessage(new MessageBuilder()
+                                                                   .setEmbed(builder.build())
+                                                                   .setContent(
+                                                                           "Parabéns! Você registrou o bug com sucesso.")
+                                                                   .build())
+                                              .queue((msg) -> this.message.delete().queue());
+                                       this.bot.REPORT_PROCESSING.remove(report.getUserId());
+                                   }
+            ).await().indefinitely();
+
+
             return;
         }
         this.processingState = processingState.nextState();
@@ -121,6 +132,11 @@ public class ReportProcessing {
             default:
                 break;
         }
+    }
+
+    private Uni<Void> save() {
+        final ReportService service = this.bot.getReportService();
+        return service.create(this.report);
     }
 
 

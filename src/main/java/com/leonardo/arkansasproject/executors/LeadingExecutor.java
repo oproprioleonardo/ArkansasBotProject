@@ -10,7 +10,6 @@ import com.leonardo.arkansasproject.utils.Checker;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -36,8 +35,6 @@ public class LeadingExecutor extends ListenerAdapter {
                      .filter(clazz -> clazz.load().isAnnotationPresent(CommandExecutor.class))
                      .map(classInfo -> {
                          final Object instance = bot.getInjector().getInstance(classInfo.load());
-                         Logger.getRootLogger()
-                               .info("Executor " + instance.getClass().getSimpleName() + " registrado.");
                          return Maps.immutableEntry(classInfo.load().getAnnotation(CommandExecutor.class),
                                                     (Executor) instance);
                      })
