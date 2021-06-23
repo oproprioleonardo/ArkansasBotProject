@@ -12,9 +12,9 @@ import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
 import org.ehcache.Cache;
 
-import java.awt.*;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
@@ -28,7 +28,6 @@ public class ReportCmdExecutor implements Executor {
     @Override
     public void exec(MessageReceivedEvent mre, User sender, String[] args) {
         final MessageChannel channel = mre.getChannel();
-        if (mre.isWebhookMessage()) return;
         final Cache<String, ReportProcessing> processing = this.bot.REPORT_PROCESSING;
         final boolean match = processing.getAll(new HashSet<>()).keySet().stream()
                                         .anyMatch(userId -> userId.equalsIgnoreCase(sender.getId()));
@@ -40,34 +39,37 @@ public class ReportCmdExecutor implements Executor {
         }
         if (args.length == 0) {
             channel.sendMessage(TemplateMessages.NO_ARGS.getMessageEmbed()).complete().delete()
-                   .delay(20, TimeUnit.SECONDS).queue();
+                   .queueAfter(12, TimeUnit.SECONDS);
             return;
         }
         final String title = String.join(" ", args);
         if (!Checker.characterLength(title)) {
             channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed()).complete().delete()
-                   .delay(20, TimeUnit.SECONDS).queue();
+                   .queueAfter(12, TimeUnit.SECONDS);
             return;
         }
+        final EmbedBuilder builder = TemplateMessages.TEMPLATE_PROCESSING_REPORT.getEmbedBuilder();
+        final MessageBuilder messageBuilder = new MessageBuilder();
+        builder.setAuthor(sender.getAsTag() + " (" + sender.getId() + ")");
+        builder
+                .appendDescription("[")
+                .appendDescription(title)
+                .appendDescription("](https://github.com/LeonardoCod3r) \n")
+                .appendDescription("\n");
+        messageBuilder.setEmbed(builder.build());
         final Report report = new Report();
         report.setUserId(sender.getId());
         report.setTitle(title);
-        final EmbedBuilder builder = new EmbedBuilder();
-        final MessageBuilder messageBuilder = new MessageBuilder();
-        builder.setColor(new Color(59, 56, 209));
-        builder.setAuthor(sender.getAsTag() + " (" + sender.getId() + ")");
-        final StringBuilder descBuilder = builder.getDescriptionBuilder();
-        descBuilder
-                .append("\n\n")
-                .append("[")
-                .append(title)
-                .append("](https://github.com/LeonardoCod3r) \n")
-                .append("\n");
-        messageBuilder.setContent(
-                sender.getAsMention() + ", explique passo a passo a ocorrência do bug. Por fim, digite \"PRONTO\".");
-        messageBuilder.setEmbed(builder.build());
         final ReportProcessing reportProcessing = new ReportProcessing(report, this.bot);
-        reportProcessing.setMessage(channel.sendMessage(messageBuilder.build()).complete());
+        reportProcessing.setMessage(
+                channel
+                        .sendMessage(messageBuilder.build())
+                        .complete()
+                        .editMessage(sender.getName() +
+                                     ", explique passo a passo a ocorrência do bug. Por fim, clique em \"PRONTO\".")
+                        .setActionRow(Button.success("confirm-next", "Pronto"))
+                        .complete()
+        );
         processing.put(sender.getId(), reportProcessing);
     }
 }

@@ -3,7 +3,6 @@ package com.leonardo.arkansasproject.database;
 import io.smallrye.mutiny.Uni;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 public interface Repository<O, T> {

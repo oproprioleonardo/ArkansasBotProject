@@ -12,7 +12,6 @@ import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
 import com.leonardo.arkansasproject.services.ReportService;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
-import org.apache.logging.log4j.LogManager;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -34,7 +33,7 @@ public class Bot {
     @Getter
     private final CacheManager cacheManager;
     @Getter
-    private Injector injector;
+    private final Injector injector;
     @Getter
     @Inject
     private LeadingExecutor leadingExecutor;
@@ -49,6 +48,7 @@ public class Bot {
     private JDA jda;
     @Getter
     private JsonObject config;
+
     public Bot() {
         this.createConfigurationFile();
         this.injector = Guice.createInjector(ArkansasModule.of(this));

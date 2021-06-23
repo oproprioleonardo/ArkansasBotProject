@@ -6,7 +6,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.reactive.mutiny.Mutiny;
-import org.hibernate.reactive.mutiny.Mutiny.Session;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -46,11 +45,13 @@ public abstract class JpaRepository<O, T extends Serializable> implements Reposi
     }
 
     public Uni<O> deleteById(T id) {
-        return read(id).call(report -> sessionFactory.withTransaction((session, transaction) -> session.remove(report)));
+        return read(id)
+                .call(report -> sessionFactory.withTransaction((session, transaction) -> session.remove(report)));
     }
 
     public Uni<List<O>> findAll() {
-        return sessionFactory.withTransaction((session, transaction) -> session.createQuery("FROM " + target.getName(), target).getResultList());
+        return sessionFactory.withTransaction(
+                (session, transaction) -> session.createQuery("FROM " + target.getName(), target).getResultList());
     }
 
     public Uni<List<O>> findAll(Predicate<O> predicate) {

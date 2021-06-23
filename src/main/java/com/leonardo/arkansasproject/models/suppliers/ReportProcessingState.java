@@ -27,7 +27,8 @@ public enum ReportProcessingState {
     }
 
     public static ReportProcessingState fromPosition(int position) {
-        return Arrays.stream(ReportProcessingState.values()).filter(state -> state.getPosition() == position).findFirst().orElse(null);
+        return Arrays.stream(ReportProcessingState.values()).filter(state -> state.getPosition() == position)
+                     .findFirst().orElse(null);
     }
 
     public int next() {

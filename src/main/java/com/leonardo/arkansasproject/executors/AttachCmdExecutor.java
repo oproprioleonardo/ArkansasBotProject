@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 @CommandExecutor(aliases = {"attach", "anexar"})
 @NoArgsConstructor
-public class AttachCmdExecutor implements Executor{
+public class AttachCmdExecutor implements Executor {
 
     @Inject
     private Bot bot;

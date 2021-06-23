@@ -4,13 +4,13 @@ import com.google.common.collect.Lists;
 import com.leonardo.arkansasproject.Bot;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.services.ReportService;
+import com.leonardo.arkansasproject.utils.TemplateMessages;
 import io.smallrye.mutiny.Uni;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 
@@ -98,40 +98,39 @@ public class ReportProcessing {
         this.updateAllFields();
         this.updateMessage();
         if (!this.processingState.hasNext()) {
-            final MessageChannel channel = this.message.getChannel();
-            this.save().invoke(() -> {
-                                       channel.sendMessage(new MessageBuilder()
-                                                                   .setEmbed(builder.build())
-                                                                   .setContent(
-                                                                           "Parabéns! Você registrou o bug com sucesso.")
-                                                                   .build())
-                                              .queue((msg) -> this.message.delete().queue());
-                                       this.bot.REPORT_PROCESSING.remove(report.getUserId());
-                                   }
-            ).await().indefinitely();
-
-
+            this.complete();
             return;
         }
         this.processingState = processingState.nextState();
         switch (processingState) {
             case ATTACH_ACTUAL_RESULT:
                 this.message = message.editMessage(
-                        report.getAuthor().getAsMention() + ", diga o que realmente aconteceu em poucas palavras.")
+                        report.getAuthor().getName() + ", diga o que realmente aconteceu em poucas palavras.")
                                       .complete();
                 break;
             case ATTACH_EXPECTED_RESULT:
                 this.message = message.editMessage(
-                        report.getAuthor().getAsMention() + ", diga o que era correto acontecer em poucas palavras.")
+                        report.getAuthor().getName() + ", diga o que era correto acontecer em poucas palavras.")
                                       .complete();
                 break;
             case ATTACH_SERVER:
                 this.message = message.editMessage(
-                        report.getAuthor().getAsMention() + ", diga em qual servidor o bug ocorreu.").complete();
+                        report.getAuthor().getName() + ", diga em qual servidor o bug ocorreu.").complete();
                 break;
             default:
                 break;
         }
+    }
+
+    private void complete() {
+        final MessageChannel channel = this.message.getChannel();
+        this.save().invoke(() -> {
+                               channel.sendMessage(TemplateMessages.REPORT_SUCCESS.getMessageEmbed()).queue();
+                               channel.sendMessage(builder.build())
+                                      .queue((msg) -> this.message.delete().queue());
+                               this.bot.REPORT_PROCESSING.remove(report.getUserId());
+                           }
+        ).await().indefinitely();
     }
 
     private Uni<Void> save() {
