@@ -5,7 +5,7 @@ Este projeto é referente a criação de um bot de relatórios de bugs gravado e
 ## Recursos
 
 - [Hibernate 5.5.0-final](https://github.com/hibernate/hibernate-orm/tree/master/hibernate-core)
-- [Hibernate-Reactive 1.0.0.CR6](https://github.com/hibernate/hibernate-reactive)
+- [Hibernate-Reactive 1.0.0.CR7](https://github.com/hibernate/hibernate-reactive)
 - [Vertx MySQL Client](https://github.com/eclipse-vertx/vertx-sql-client/tree/master/vertx-mysql-client)
 - [Ehcache](https://github.com/ehcache/ehcache3)
 - [Mutiny](https://github.com/smallrye/smallrye-mutiny)
