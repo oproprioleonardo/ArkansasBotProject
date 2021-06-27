@@ -2,6 +2,7 @@ package com.leonardo.arkansasproject.models.suppliers;
 
 import com.google.common.collect.Lists;
 import com.leonardo.arkansasproject.Bot;
+import com.leonardo.arkansasproject.dispatchers.ReportDispatch;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.services.ReportService;
 import com.leonardo.arkansasproject.utils.TemplateMessages;
@@ -129,6 +130,7 @@ public class ReportProcessing {
                                channel.sendMessage(builder.build())
                                       .queue((msg) -> this.message.delete().queue());
                                this.bot.REPORT_PROCESSING.remove(report.getUserId());
+                               Bot.getInstance().getDispatcher().dispatch(ReportDispatch.ACTIVATED.getInstance(), report);
                            }
         ).await().indefinitely();
     }

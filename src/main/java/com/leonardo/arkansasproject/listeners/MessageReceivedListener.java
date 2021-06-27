@@ -80,7 +80,7 @@ public class MessageReceivedListener extends ListenerAdapter {
                         break;
                     case ATTACH_EXPECTED_RESULT:
                         if (!Checker.characterLength(contentRaw, 60)) {
-                            channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed())
+                            channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed())
                                    .complete().delete().queueAfter(12, TimeUnit.SECONDS);
                             return;
                         }
@@ -89,7 +89,7 @@ public class MessageReceivedListener extends ListenerAdapter {
                         break;
                     case ATTACH_ACTUAL_RESULT:
                         if (!Checker.characterLength(contentRaw, 60)) {
-                            channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed())
+                            channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed())
                                    .complete().delete().queueAfter(12, TimeUnit.SECONDS);
                             return;
                         }

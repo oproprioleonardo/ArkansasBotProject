@@ -7,24 +7,41 @@ import java.awt.*;
 
 public enum TemplateMessages {
 
-    NO_ARGS(new EmbedBuilder()
+    NO_ARGS_REPORT(new EmbedBuilder()
                     .setColor(new Color(59, 56, 209))
                     .addField("Erro:", "Você não colocou nenhum título.", false)
                     .addField("Sugestão de comando:", "&reportar Digite o seu título", false)
     ),
-    ARGS_LENGTH_NOT_SUPPORTED(new EmbedBuilder()
+    NO_ARGS_ATTACH(new EmbedBuilder()
+                           .setColor(new Color(59, 56, 209))
+                           .addField("Erro:", "Quantidade de argumentos não suportada", false)
+                           .addField("Sugestão de comando:", "&anexar [id] [url] [descrição]", false)
+    ),
+    TEXT_LENGTH_NOT_SUPPORTED(new EmbedBuilder()
                                       .setColor(new Color(59, 56, 209))
-                                      .addField("Erro:", "A quantidade de caracteres emitidas não é permitida. (6-40)",
+                                      .addField("Erro:", "A quantidade de caracteres emitidas não é permitida.",
                                                 false)
     ),
     NOT_URL(new EmbedBuilder()
                     .setColor(new Color(59, 56, 209))
-                    .addField("Erro", "O texto especificado não corresponde a uma url.", false)
+                    .addField("Erro:", "O texto especificado não corresponde a uma url.", false)
+    ),
+    NOT_EXISTS_REPORT(new EmbedBuilder()
+                    .setColor(new Color(59, 56, 209))
+                    .addField("Erro:", "O id especificado não corresponde a nenhum relatório.", false)
     ),
     NO_STEPS(new EmbedBuilder()
                      .setColor(new Color(59, 56, 209))
                      .addField("Erro:", "Você não explicou como é feito o bug.", false)
                      .addField("Sugestão:", "\"Eu digitei blabla e apareceu um erro na tela.\"", false)
+    ),
+    REPORT_SAVE_ERROR(new EmbedBuilder()
+                              .setColor(new Color(59, 56, 209))
+                              .addField("Erro:", "Não foi possível salvar as alterações.", false)
+    ),
+    REPORT_SAVE_SUCCESS(new EmbedBuilder()
+                              .setColor(new Color(59, 56, 209))
+                              .appendDescription("As alterações foram salvas com sucesso.")
     ),
     REPORT_SUCCESS(new EmbedBuilder()
                            .setColor(new Color(59, 56, 209))
@@ -38,7 +55,11 @@ public enum TemplateMessages {
                            .appendDescription("\n")
                            .appendDescription("uma correção definitiva.")
                            .appendDescription("\n\n")
-                           .appendDescription("Anexar ficheiros: ```&anexar [ID] [nome] [link].```")
+                           .appendDescription("Anexar ficheiros: ```&anexar [ID] [link] [desc].```")
+                           .appendDescription("\n")
+                           .appendDescription("Cuidado para não colocar uma descrição maior")
+                           .appendDescription("\n")
+                           .appendDescription("que 40 caracteres.")
                            .appendDescription("\n\n")
                            .appendDescription("Abaixo, encontra-se a forma de apresentação como")
                            .appendDescription("\n")

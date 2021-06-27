@@ -40,6 +40,7 @@ public class Report implements Serializable {
                      joinColumns = {@JoinColumn(name = "attachment_id", referencedColumnName = "id")})
     @MapKeyColumn(name = "attachment_name", length = 80)
     @Column(name = "attachment_url")
+    @LazyCollection(value = LazyCollectionOption.FALSE)
     private Map<String, String> attachments = Maps.newHashMap();
     private String expectedOutcome;
     private String actualResult;

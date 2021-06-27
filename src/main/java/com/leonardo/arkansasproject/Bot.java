@@ -6,6 +6,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.leonardo.arkansasproject.di.ArkansasModule;
+import com.leonardo.arkansasproject.dispatchers.Dispatcher;
 import com.leonardo.arkansasproject.executors.LeadingExecutor;
 import com.leonardo.arkansasproject.listeners.MessageReceivedListener;
 import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
@@ -46,6 +47,9 @@ public class Bot {
     @Inject
     @Getter
     private JDA jda;
+    @Getter
+    @Inject
+    private Dispatcher dispatcher;
     @Getter
     private JsonObject config;
 

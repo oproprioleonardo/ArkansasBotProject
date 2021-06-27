@@ -38,13 +38,13 @@ public class ReportCmdExecutor implements Executor {
             return;
         }
         if (args.length == 0) {
-            channel.sendMessage(TemplateMessages.NO_ARGS.getMessageEmbed()).complete().delete()
+            channel.sendMessage(TemplateMessages.NO_ARGS_REPORT.getMessageEmbed()).complete().delete()
                    .queueAfter(12, TimeUnit.SECONDS);
             return;
         }
         final String title = String.join(" ", args);
         if (!Checker.characterLength(title)) {
-            channel.sendMessage(TemplateMessages.ARGS_LENGTH_NOT_SUPPORTED.getMessageEmbed()).complete().delete()
+            channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed()).complete().delete()
                    .queueAfter(12, TimeUnit.SECONDS);
             return;
         }
