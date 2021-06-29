@@ -5,7 +5,7 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
-public enum ReportProcessingState {
+public enum ReportProcessingStatus {
 
     @SerializedName("ATTACH_STEP_BY_STEP")
     ATTACH_STEP_BY_STEP(1, "Anexar passo a passo"),
@@ -21,13 +21,13 @@ public enum ReportProcessingState {
     @Getter
     private final String value;
 
-    ReportProcessingState(int position, String value) {
+    ReportProcessingStatus(int position, String value) {
         this.value = value;
         this.position = position;
     }
 
-    public static ReportProcessingState fromPosition(int position) {
-        return Arrays.stream(ReportProcessingState.values()).filter(state -> state.getPosition() == position)
+    public static ReportProcessingStatus fromPosition(int position) {
+        return Arrays.stream(ReportProcessingStatus.values()).filter(state -> state.getPosition() == position)
                      .findFirst().orElse(null);
     }
 
@@ -39,7 +39,7 @@ public enum ReportProcessingState {
         return Arrays.stream(values()).anyMatch(state -> state.getPosition() > this.position);
     }
 
-    public ReportProcessingState nextState() {
+    public ReportProcessingStatus nextState() {
         return fromPosition(next());
     }
 }

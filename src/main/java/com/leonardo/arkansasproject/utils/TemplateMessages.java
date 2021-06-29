@@ -8,9 +8,9 @@ import java.awt.*;
 public enum TemplateMessages {
 
     NO_ARGS_REPORT(new EmbedBuilder()
-                    .setColor(new Color(59, 56, 209))
-                    .addField("Erro:", "Você não colocou nenhum título.", false)
-                    .addField("Sugestão de comando:", "&reportar Digite o seu título", false)
+                           .setColor(new Color(59, 56, 209))
+                           .addField("Erro:", "Você não colocou nenhum título.", false)
+                           .addField("Sugestão de comando:", "&reportar Digite o seu título", false)
     ),
     NO_ARGS_ATTACH(new EmbedBuilder()
                            .setColor(new Color(59, 56, 209))
@@ -27,8 +27,8 @@ public enum TemplateMessages {
                     .addField("Erro:", "O texto especificado não corresponde a uma url.", false)
     ),
     NOT_EXISTS_REPORT(new EmbedBuilder()
-                    .setColor(new Color(59, 56, 209))
-                    .addField("Erro:", "O id especificado não corresponde a nenhum relatório.", false)
+                              .setColor(new Color(59, 56, 209))
+                              .addField("Erro:", "O id especificado não corresponde a nenhum relatório.", false)
     ),
     NO_STEPS(new EmbedBuilder()
                      .setColor(new Color(59, 56, 209))
@@ -40,8 +40,8 @@ public enum TemplateMessages {
                               .addField("Erro:", "Não foi possível salvar as alterações.", false)
     ),
     REPORT_SAVE_SUCCESS(new EmbedBuilder()
-                              .setColor(new Color(59, 56, 209))
-                              .appendDescription("As alterações foram salvas com sucesso.")
+                                .setColor(new Color(59, 56, 209))
+                                .appendDescription("As alterações foram salvas com sucesso.")
     ),
     REPORT_SUCCESS(new EmbedBuilder()
                            .setColor(new Color(59, 56, 209))

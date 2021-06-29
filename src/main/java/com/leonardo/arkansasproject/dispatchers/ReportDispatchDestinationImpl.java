@@ -5,6 +5,12 @@ import lombok.Getter;
 
 public class ReportDispatchDestinationImpl implements ReportDispatchDestination {
 
+    private static final Bot bot;
+
+    static {
+        bot = Bot.getInstance();
+    }
+
     @Getter
     private boolean loaded = false;
     @Getter
@@ -16,7 +22,7 @@ public class ReportDispatchDestinationImpl implements ReportDispatchDestination 
     }
 
     public void load() {
-        this.channelId = Bot.getInstance().getConfig().get(getRouteInConfig()).getAsString();
+        this.channelId = bot.getConfig().get(getRouteInConfig()).getAsString();
         this.loaded = true;
     }
 }

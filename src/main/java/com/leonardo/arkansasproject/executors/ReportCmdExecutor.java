@@ -1,7 +1,7 @@
 package com.leonardo.arkansasproject.executors;
 
 import com.google.inject.Inject;
-import com.leonardo.arkansasproject.Bot;
+import com.leonardo.arkansasproject.managers.ReportProcessingManager;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
 import com.leonardo.arkansasproject.utils.Checker;
@@ -13,9 +13,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
-import org.ehcache.Cache;
 
-import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 @CommandExecutor(aliases = {"report", "reportar"})
@@ -23,15 +21,12 @@ import java.util.concurrent.TimeUnit;
 public class ReportCmdExecutor implements Executor {
 
     @Inject
-    private Bot bot;
+    private ReportProcessingManager manager;
 
     @Override
     public void exec(MessageReceivedEvent mre, User sender, String[] args) {
         final MessageChannel channel = mre.getChannel();
-        final Cache<String, ReportProcessing> processing = this.bot.REPORT_PROCESSING;
-        final boolean match = processing.getAll(new HashSet<>()).keySet().stream()
-                                        .anyMatch(userId -> userId.equalsIgnoreCase(sender.getId()));
-        if (match) {
+        if (manager.exists(sender.getIdLong())) {
             channel.sendMessage(sender.getAsMention() +
                                 ", você já está fazendo um relatório. Aguarde alguns segundos ou complete o existente.")
                    .queue();
@@ -60,7 +55,7 @@ public class ReportCmdExecutor implements Executor {
         final Report report = new Report();
         report.setUserId(sender.getId());
         report.setTitle(title);
-        final ReportProcessing reportProcessing = new ReportProcessing(report, this.bot);
+        final ReportProcessing reportProcessing = new ReportProcessing(report);
         reportProcessing.setMessage(
                 channel
                         .sendMessage(messageBuilder.build())
@@ -70,6 +65,6 @@ public class ReportCmdExecutor implements Executor {
                         .setActionRow(Button.success("confirm-next", "Pronto"))
                         .complete()
         );
-        processing.put(sender.getId(), reportProcessing);
+        manager.put(sender.getIdLong(), reportProcessing);
     }
 }

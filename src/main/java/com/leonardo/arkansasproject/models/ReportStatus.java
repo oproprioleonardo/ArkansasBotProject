@@ -3,12 +3,12 @@ package com.leonardo.arkansasproject.models;
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 
-public enum ReportState {
+public enum ReportStatus {
 
     @SerializedName("ARCHIVED")
     ARCHIVED("Arquivado"),
     @SerializedName("ACTIVE")
-    ACTIVE("Em análise"),
+    ACTIVATED("Em análise"),
     @SerializedName("ACCEPTED")
     ACCEPTED("Aprovado"),
     @SerializedName("REFUSED")
@@ -17,7 +17,7 @@ public enum ReportState {
     @Getter
     private final String value;
 
-    ReportState(String value) {
+    ReportStatus(String value) {
         this.value = value;
     }
 

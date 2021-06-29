@@ -8,15 +8,15 @@ import com.google.inject.Injector;
 import com.leonardo.arkansasproject.di.ArkansasModule;
 import com.leonardo.arkansasproject.dispatchers.Dispatcher;
 import com.leonardo.arkansasproject.executors.LeadingExecutor;
+import com.leonardo.arkansasproject.listeners.ButtonClickListener;
 import com.leonardo.arkansasproject.listeners.MessageReceivedListener;
+import com.leonardo.arkansasproject.managers.ReportProcessingManager;
 import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
 import com.leonardo.arkansasproject.services.ReportService;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
-import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.hibernate.reactive.mutiny.Mutiny;
@@ -30,11 +30,14 @@ import java.time.Duration;
 public class Bot {
 
     private static Bot instance;
-    public final Cache<String, ReportProcessing> REPORT_PROCESSING;
-    @Getter
-    private final CacheManager cacheManager;
     @Getter
     private final Injector injector;
+    @Inject
+    @Getter
+    private CacheManager cacheManager;
+    @Inject
+    @Getter
+    private ReportProcessingManager reportProcessingManager;
     @Getter
     @Inject
     private LeadingExecutor leadingExecutor;
@@ -56,22 +59,26 @@ public class Bot {
     public Bot() {
         this.createConfigurationFile();
         this.injector = Guice.createInjector(ArkansasModule.of(this));
-        this.cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build();
         this.injector.injectMembers(this);
+        this.reportProcessingManager.init();
         this.leadingExecutor.run();
         this.jda.addEventListener(this.leadingExecutor);
-        this.jda.addEventListener(this.injector.getInstance(MessageReceivedListener.class));
-        this.cacheManager.init();
+        this.jda.addEventListener(
+                this.getInstance(MessageReceivedListener.class),
+                this.getInstance(ButtonClickListener.class)
+        );
         final CacheConfigurationBuilder<String, ReportProcessing> configurationBuilder = CacheConfigurationBuilder
                 .newCacheConfigurationBuilder(String.class, ReportProcessing.class, ResourcePoolsBuilder.heap(100));
         configurationBuilder.withExpiry(ExpiryPolicyBuilder.timeToIdleExpiration(Duration.ofSeconds(120)));
-        this.REPORT_PROCESSING = this.cacheManager.createCache("REPORT_PROCESSING",
-                                                               configurationBuilder);
 
     }
 
     public static Bot getInstance() {
         return instance == null ? instance = new Bot() : instance;
+    }
+
+    public <O> O getInstance(Class<O> clazz) {
+        return this.injector.getInstance(clazz);
     }
 
     public void createConfigurationFile() {

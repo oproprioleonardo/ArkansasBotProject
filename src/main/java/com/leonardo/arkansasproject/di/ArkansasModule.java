@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.leonardo.arkansasproject.Bot;
+import com.leonardo.arkansasproject.dispatchers.Dispatcher;
 import com.leonardo.arkansasproject.repositories.ReportRepository;
 import com.leonardo.arkansasproject.repositories.ReportRepositoryImpl;
 import com.leonardo.arkansasproject.services.ReportService;
@@ -14,6 +15,8 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheManagerBuilder;
 import org.hibernate.reactive.mutiny.Mutiny;
 
 import javax.persistence.Persistence;
@@ -27,12 +30,21 @@ public class ArkansasModule extends AbstractModule {
         bind(Bot.class).toInstance(this.bot);
         bind(ReportRepository.class).to(ReportRepositoryImpl.class);
         bind(ReportService.class).to(ReportServiceImpl.class);
+        bind(Dispatcher.class);
     }
 
     @Provides
     @Singleton
     public Mutiny.SessionFactory providesSessionFactory() {
         return Persistence.createEntityManagerFactory("mainProcessor").unwrap(Mutiny.SessionFactory.class);
+    }
+
+    @Provides
+    @Singleton
+    public CacheManager providesCacheManager() {
+        final CacheManager manager = CacheManagerBuilder.newCacheManagerBuilder().build();
+        manager.init();
+        return manager;
     }
 
     @SneakyThrows

@@ -2,10 +2,10 @@ package com.leonardo.arkansasproject.models;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.leonardo.arkansasproject.Bot;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.LazyCollection;
@@ -46,10 +46,10 @@ public class Report implements Serializable {
     private String actualResult;
     private String serverName;
     @Enumerated
-    private ReportState state = ReportState.ACTIVE;
+    private ReportStatus status = ReportStatus.ACTIVATED;
 
-    public User getAuthor() {
-        return Bot.getInstance().getJda().retrieveUserById(userId).complete();
+    public User getAuthor(JDA jda) {
+        return jda.retrieveUserById(userId).complete();
     }
 
     public void appendStep(String step) {
