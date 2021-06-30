@@ -1,6 +1,7 @@
 package com.leonardo.arkansasproject.dispatchers;
 
 import com.google.gson.JsonObject;
+
 public interface ReportDispatchDestination {
 
     String getChannelId();

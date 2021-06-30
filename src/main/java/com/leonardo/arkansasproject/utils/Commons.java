@@ -2,7 +2,6 @@ package com.leonardo.arkansasproject.utils;
 
 import com.leonardo.arkansasproject.models.Report;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.User;
 
 import java.awt.*;
@@ -18,7 +17,7 @@ public class Commons {
                 .appendDescription("\n")
                 .addField("Resultado esperado", report.getExpectedOutcome(), false)
                 .addField("Resultado real", report.getActualResult(), false)
-                .addField("Anomalia ocorrida em", report.getServerName()+ "\n**\n**", false);
+                .addField("Anomalia ocorrida em", report.getServerName() + "\n**\n**", false);
         report.getSteps().forEach(s -> builder.appendDescription("- " + s + "\n"));
         builder.appendDescription("_\n_");
         final Map<String, String> attachments = report.getAttachments();

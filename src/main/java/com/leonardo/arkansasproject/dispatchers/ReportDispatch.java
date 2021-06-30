@@ -1,7 +1,6 @@
 package com.leonardo.arkansasproject.dispatchers;
 
 import com.google.gson.JsonObject;
-import com.leonardo.arkansasproject.Bot;
 import com.leonardo.arkansasproject.models.ReportStatus;
 
 public enum ReportDispatch {
@@ -17,17 +16,21 @@ public enum ReportDispatch {
         this.reportDispatchDestination = reportDispatchDestination;
     }
 
+    public static ReportDispatch fromReportStatus(ReportStatus reportStatus) {
+        switch (reportStatus) {
+            case ACCEPTED:
+                return ACCEPTED;
+            case REFUSED:
+                return REFUSED;
+            case ARCHIVED:
+                return ARCHIVED;
+            default:
+                return ACTIVATED;
+        }
+    }
+
     public ReportDispatchDestination getInstance(JsonObject config) {
         if (!reportDispatchDestination.isLoaded()) reportDispatchDestination.load(config);
         return reportDispatchDestination;
-    }
-
-    public static ReportDispatch fromReportStatus(ReportStatus reportStatus) {
-        switch (reportStatus) {
-            case ACCEPTED: return ACCEPTED;
-            case REFUSED: return REFUSED;
-            case ARCHIVED: return ARCHIVED;
-            default: return ACTIVATED;
-        }
     }
 }

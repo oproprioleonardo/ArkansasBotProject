@@ -3,7 +3,6 @@ package com.leonardo.arkansasproject.executors;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.leonardo.arkansasproject.Bot;
 import com.leonardo.arkansasproject.utils.Checker;

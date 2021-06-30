@@ -1,7 +1,6 @@
 package com.leonardo.arkansasproject.dispatchers;
 
 import com.google.gson.JsonObject;
-import com.leonardo.arkansasproject.Bot;
 import lombok.Getter;
 
 public class ReportDispatchDestinationImpl implements ReportDispatchDestination {

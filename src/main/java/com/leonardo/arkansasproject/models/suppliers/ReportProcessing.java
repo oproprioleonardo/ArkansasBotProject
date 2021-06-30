@@ -17,9 +17,9 @@ public class ReportProcessing {
 
     @Getter
     public final Report report;
+    public Message message;
     @Getter
     private ReportProcessingStatus processingState = ReportProcessingStatus.ATTACH_STEP_BY_STEP;
-    public Message message;
 
     public ReportProcessing(Report report) {
         this.report = report;
