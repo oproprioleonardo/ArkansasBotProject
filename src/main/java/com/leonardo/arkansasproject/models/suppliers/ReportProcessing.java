@@ -4,7 +4,6 @@ import com.leonardo.arkansasproject.models.Report;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -19,9 +18,7 @@ public class ReportProcessing {
     @Getter
     public final Report report;
     @Getter
-    @Setter
-    public ReportProcessingStatus processingState = ReportProcessingStatus.ATTACH_STEP_BY_STEP;
-    @Setter
+    private ReportProcessingStatus processingState = ReportProcessingStatus.ATTACH_STEP_BY_STEP;
     public Message message;
 
     public ReportProcessing(Report report) {
@@ -32,22 +29,19 @@ public class ReportProcessing {
         final EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setColor(new Color(59, 56, 209))
                 .setAuthor(user.getAsTag() + " (" + report.getUserId() + ")")
-                .appendDescription("\n\n")
-                .appendDescription("[")
-                .appendDescription(report.getTitle())
-                .appendDescription("](https://github.com/LeonardoCod3r)")
-                .appendDescription("\n")
+                .setTitle(report.getTitle(), "https://github.com/LeonardoCod3r")
                 .appendDescription("\n");
         report.getSteps().forEach(s -> embedBuilder
                 .appendDescription("- ")
                 .appendDescription(s)
                 .appendDescription("\n"));
+        embedBuilder.appendDescription("_\n_");
         if (report.getExpectedOutcome() != null)
             embedBuilder.addField("Resultado esperado", report.getExpectedOutcome(), false);
         if (report.getActualResult() != null)
             embedBuilder.addField("Resultado real", report.getActualResult(), false);
         if (report.getServerName() != null)
-            embedBuilder.addField("Anomalia ocorrida em", report.getServerName(), false);
+            embedBuilder.addField("Anomalia ocorrida em", report.getServerName() + "\n**\n**", false);
         return embedBuilder.build();
     }
 

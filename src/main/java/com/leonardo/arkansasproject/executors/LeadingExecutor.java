@@ -21,11 +21,9 @@ import java.util.List;
 public class LeadingExecutor extends ListenerAdapter {
 
     private final HashMap<CommandExecutor, Executor> executors = Maps.newHashMap();
-    @Inject
-    private Bot bot;
 
     @SuppressWarnings("UnstableApiUsage")
-    public void run() {
+    public void run(Bot bot) {
         try {
             ClassPath.from(this.getClass().getClassLoader())
                      .getAllClasses()

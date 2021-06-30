@@ -1,9 +1,15 @@
 package com.leonardo.arkansasproject.listeners;
 
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.leonardo.arkansasproject.dispatchers.Dispatcher;
 import com.leonardo.arkansasproject.dispatchers.ReportDispatch;
 import com.leonardo.arkansasproject.managers.ReportProcessingManager;
+import com.leonardo.arkansasproject.models.BugCategory;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.models.ReportStatus;
 import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
@@ -18,9 +24,15 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.interactions.components.ButtonInteraction;
+import net.dv8tion.jda.api.interactions.components.Component;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.requests.restaction.interactions.UpdateInteractionAction;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ButtonClickListener extends ListenerAdapter {
 
@@ -30,6 +42,15 @@ public class ButtonClickListener extends ListenerAdapter {
     private ReportService service;
     @Inject
     private Dispatcher dispatcher;
+    private Set<BugCategory> categories;
+
+    @Inject
+    private void providesBugCategories(@Named(value = "main_config") JsonObject config) {
+        final Gson gson = new GsonBuilder().create();
+        this.categories = Sets.newHashSet();
+        config.getAsJsonArray("categories").deepCopy()
+              .forEach(jsonElement -> this.categories.add(gson.fromJson(jsonElement, BugCategory.class)));
+    }
 
     @Override
     public void onButtonClick(ButtonClickEvent event) {
@@ -37,6 +58,7 @@ public class ButtonClickListener extends ListenerAdapter {
         final MessageChannel channel = event.getMessageChannel();
         final Message message = event.getMessage();
         final String componentId = event.getComponentId();
+        final ButtonInteraction interaction = event.getInteraction();
         if (message != null) {
             if ("confirm-next".equals(componentId)) {
                 if (!manager.exists(user.getIdLong())) return;
@@ -56,11 +78,11 @@ public class ButtonClickListener extends ListenerAdapter {
                             .appendDescription("](https://github.com/LeonardoCod3r) \n")
                             .appendDescription("\n");
                     messageBuilder.setEmbed(builder.build());
-                    reportProcessing.setMessage(
+                    reportProcessing.message =
                             channel
                                     .sendMessage(messageBuilder.build())
-                                    .complete()
-                    );
+                                    .complete();
+
                     reportProcessing.next(user, (rp, hasNext) -> rp.message = rp.message.editMessage(
                             report.getAuthor(event.getJDA()).getName() +
                             ", diga o que **deveria** acontecer normalmente em poucas palavras.")
@@ -68,7 +90,7 @@ public class ButtonClickListener extends ListenerAdapter {
                 }
             } else if (componentId.startsWith("update-report")) {
                 final String[] strings = componentId.split("-");
-                event.getInteraction().deferEdit().queue();
+                interaction.deferEdit().queue();
                 final Function<Integer, Long> parseLong = (position) -> Long.parseLong(strings[position]);
                 if (componentId.startsWith("update-report-") && strings.length == 3) {
                     this.service.read(parseLong.apply(2))
@@ -83,7 +105,8 @@ public class ButtonClickListener extends ListenerAdapter {
                                         .setActionRow(
                                                 Button.success("update-report-status-accepted-" + report.getId(),
                                                                "Aceitar"),
-                                                Button.danger("update-report-status-refused-" + report.getId(), "Recusar")
+                                                Button.danger("update-report-status-refused-" + report.getId(),
+                                                              "Recusar")
                                         ).queue();
                                 break;
                             case ACCEPTED:
@@ -109,12 +132,19 @@ public class ButtonClickListener extends ListenerAdapter {
                     final Long id = parseLong.apply(4);
                     switch (strings[3]) {
                         case "accepted":
-                            this.updateStatus(id, ReportStatus.ACCEPTED, message);
+                            this.service.read(id).invoke(report -> {
+                                final MessageAction action =
+                                        message.editMessage(Commons.buildInfoMsgFrom(report, user).build());
+                                final Set<Component> set = this.categories.stream().map(bugCategory -> Button
+                                        .primary(id + "---" + bugCategory.getId(), bugCategory.getLabel())).collect(
+                                        Collectors.toSet());
+                                action.setActionRow(set).queue();
+                            }).await().indefinitely();
                             break;
                         case "refused":
                             this.updateStatus(id, ReportStatus.REFUSED, message);
                             break;
-                        case "archived" :
+                        case "archived":
                             this.updateStatus(id, ReportStatus.ARCHIVED, message);
                             break;
                         case "activated":
@@ -122,17 +152,44 @@ public class ButtonClickListener extends ListenerAdapter {
                             break;
                     }
                 }
+            } else if (componentId.contains("---") && componentId.split("---").length == 2) {
+                final String[] args = componentId.split("---");
+                final long id = Long.parseLong(args[0]);
+                final String pattern = args[1];
+                final boolean match = this.categories.stream().anyMatch(
+                        bugCategory -> bugCategory.getId().equalsIgnoreCase(pattern));
+                if (match)
+                    this.categories
+                            .stream()
+                            .filter(bugCategory -> bugCategory.getId().equalsIgnoreCase(pattern))
+                            .findFirst().ifPresent(bugCategory -> {
+                        final UpdateInteractionAction action = interaction.deferEdit();
+                        final Set<Component> set = bugCategory.getBugs().stream().map(bug -> Button
+                                .primary(id + "---" + bug.getId(), bug.getDescription())).collect(
+                                Collectors.toSet());
+                        action.setActionRow(set).queue();
+                    });
+                else
+                    this.categories.stream().map(BugCategory::getBugs).reduce((bugs, bugs2) -> {
+                        bugs.addAll(bugs2);
+                        return bugs;
+                    }).flatMap(bugs -> bugs.stream()
+                                           .filter(bug -> bug.getId().equalsIgnoreCase(pattern))
+                                           .findFirst()).ifPresent(bug -> this
+                            .updateStatus(id, ReportStatus.ACCEPTED, message,
+                                          bug.getRoles().toArray(new String[]{})));
+
             }
         }
     }
 
-    private void updateStatus(long id, ReportStatus status, Message message) {
+    private void updateStatus(long id, ReportStatus status, Message message, String... roleMentions) {
         this.service.read(id).chain(report -> {
             report.setStatus(status);
             return this.service.update(report);
         }).invoke(report -> {
             message.delete().queue();
-            this.dispatcher.dispatch(ReportDispatch.fromReportStatus(status), report);
+            this.dispatcher.dispatch(ReportDispatch.fromReportStatus(status), report, roleMentions);
         }).await().indefinitely();
     }
 

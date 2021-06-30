@@ -56,15 +56,14 @@ public class ReportCmdExecutor implements Executor {
         report.setUserId(sender.getId());
         report.setTitle(title);
         final ReportProcessing reportProcessing = new ReportProcessing(report);
-        reportProcessing.setMessage(
+        reportProcessing.message =
                 channel
                         .sendMessage(messageBuilder.build())
                         .complete()
                         .editMessage(sender.getName() +
                                      ", explique passo a passo a ocorrência do bug. Por fim, clique em \"PRONTO\".")
                         .setActionRow(Button.success("confirm-next", "Pronto"))
-                        .complete()
-        );
+                        .complete();
         manager.put(sender.getIdLong(), reportProcessing);
     }
 }

@@ -3,5 +3,65 @@
   "ACTIVE_REPORTS_CHANNEL": "ID_HERE",
   "ACCEPTED_REPORTS_CHANNEL": "ID_HERE",
   "ARCHIVED_REPORTS_CHANNEL": "ID_HERE",
-  "REFUSED_REPORTS_CHANNEL": "ID_HERE"
+  "REFUSED_REPORTS_CHANNEL": "ID_HERE",
+  "categories": [
+    {
+      "id": "report-discord",
+      "label": "Discord",
+      "bugs": [
+        {
+          "id": "report-discord-bot",
+          "description": "Problemas com bots",
+          "roles": ["849627467853332510"]
+        },
+        {
+          "id": "report-discord-chat",
+          "description": "Problemas com chats",
+          "roles": ["849627467853332510"]
+        }
+      ]
+    },
+    {
+      "id": "report-webforum",
+      "label": "Web/Fórum",
+      "bugs": [
+        {
+          "id": "report-webforum-backend",
+          "description": "Backend",
+          "roles": ["849627467853332510"]
+        },
+        {
+          "id": "report-webforum-frontend",
+          "description": "Frontend",
+          "roles": ["849627467853332510"]
+        },
+        {
+          "id": "report-webforum-paymentsystem",
+          "description": "Sistema de pagamentos",
+          "roles": ["849627467853332510"]
+        }
+      ]
+    },
+    {
+      "id": "report-minecraft",
+      "label": "Minecraft",
+      "bugs": [
+        {
+          "id": "report-minecraft-minigames",
+          "description": "MiniGames",
+          "roles": ["849627467853332510"]
+        },
+        {
+          "id": "report-minecraft-factions",
+          "description": "Factions",
+          "roles": ["849627467853332510"]
+        },
+        {
+          "id": "report-minecraft-rankup",
+          "description": "RankUP",
+          "roles": ["849627467853332510"]
+        }
+      ]
+    }
+  ]
 }

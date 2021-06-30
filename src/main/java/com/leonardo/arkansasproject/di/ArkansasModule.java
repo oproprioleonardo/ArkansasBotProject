@@ -1,8 +1,10 @@
 package com.leonardo.arkansasproject.di;
 
+import com.google.gson.JsonObject;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Names;
 import com.leonardo.arkansasproject.Bot;
 import com.leonardo.arkansasproject.dispatchers.Dispatcher;
 import com.leonardo.arkansasproject.repositories.ReportRepository;
@@ -28,6 +30,7 @@ public class ArkansasModule extends AbstractModule {
 
     protected void configure() {
         bind(Bot.class).toInstance(this.bot);
+        bind(JsonObject.class).annotatedWith(Names.named("main_config")).toInstance(this.bot.getConfig());
         bind(ReportRepository.class).to(ReportRepositoryImpl.class);
         bind(ReportService.class).to(ReportServiceImpl.class);
         bind(Dispatcher.class);

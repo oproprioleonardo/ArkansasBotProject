@@ -1,5 +1,7 @@
 package com.leonardo.arkansasproject.dispatchers;
 
+import com.google.gson.JsonObject;
+import com.leonardo.arkansasproject.Bot;
 import com.leonardo.arkansasproject.models.ReportStatus;
 
 public enum ReportDispatch {
@@ -15,8 +17,8 @@ public enum ReportDispatch {
         this.reportDispatchDestination = reportDispatchDestination;
     }
 
-    public ReportDispatchDestination getInstance() {
-        if (!reportDispatchDestination.isLoaded()) reportDispatchDestination.load();
+    public ReportDispatchDestination getInstance(JsonObject config) {
+        if (!reportDispatchDestination.isLoaded()) reportDispatchDestination.load(config);
         return reportDispatchDestination;
     }
 

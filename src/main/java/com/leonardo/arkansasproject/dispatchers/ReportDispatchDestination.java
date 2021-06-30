@@ -1,5 +1,6 @@
 package com.leonardo.arkansasproject.dispatchers;
 
+import com.google.gson.JsonObject;
 public interface ReportDispatchDestination {
 
     String getChannelId();
@@ -8,7 +9,7 @@ public interface ReportDispatchDestination {
 
     boolean isLoaded();
 
-    void load();
+    void load(JsonObject config);
 
     class ActivatedReport extends ReportDispatchDestinationImpl {
         @Override

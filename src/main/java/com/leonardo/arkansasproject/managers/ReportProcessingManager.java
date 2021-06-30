@@ -1,6 +1,5 @@
 package com.leonardo.arkansasproject.managers;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
 import org.ehcache.Cache;
@@ -15,11 +14,9 @@ import java.time.Duration;
 public class ReportProcessingManager {
 
     public Cache<Long, ReportProcessing> REPORT_PROCESSING_CACHE;
-    @Inject
-    private CacheManager cacheManager;
 
-    public void init() {
-        this.REPORT_PROCESSING_CACHE = this.cacheManager
+    public void init(CacheManager cacheManager) {
+        this.REPORT_PROCESSING_CACHE = cacheManager
                 .createCache("REPORT_PROCESSING",
                              CacheConfigurationBuilder
                                      .newCacheConfigurationBuilder(
@@ -31,7 +28,7 @@ public class ReportProcessingManager {
                                              ExpiryPolicyBuilder
                                                      .timeToIdleExpiration(
                                                              Duration.ofSeconds(
-                                                                     120))));
+                                                                     150))));
     }
 
     public boolean exists(Long userId) {

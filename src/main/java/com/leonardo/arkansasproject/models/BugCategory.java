@@ -1,16 +1,13 @@
 package com.leonardo.arkansasproject.models;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import lombok.Data;
 
-@Entity
+import java.util.Set;
+
+@Data
 public class BugCategory {
 
-    @Id
-    @GeneratedValue
-    private Long id;
-    @Column(length = 16)
+    private String id;
     private String label;
+    private Set<Bug> bugs;
 }
