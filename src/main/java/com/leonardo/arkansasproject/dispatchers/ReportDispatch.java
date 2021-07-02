@@ -17,16 +17,7 @@ public enum ReportDispatch {
     }
 
     public static ReportDispatch fromReportStatus(ReportStatus reportStatus) {
-        switch (reportStatus) {
-            case ACCEPTED:
-                return ACCEPTED;
-            case REFUSED:
-                return REFUSED;
-            case ARCHIVED:
-                return ARCHIVED;
-            default:
-                return ACTIVATED;
-        }
+        return reportStatus != null ? reportStatus : ACTIVATED;
     }
 
     public ReportDispatchDestination getInstance(JsonObject config) {
