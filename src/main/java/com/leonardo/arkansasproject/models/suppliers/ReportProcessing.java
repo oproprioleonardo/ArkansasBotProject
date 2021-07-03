@@ -35,13 +35,13 @@ public class ReportProcessing {
                 .appendDescription("- ")
                 .appendDescription(s)
                 .appendDescription("\n"));
-        embedBuilder.appendDescription("_\n_");
+        embedBuilder.appendDescription("\n");
         if (report.getExpectedOutcome() != null)
             embedBuilder.addField("Resultado esperado", report.getExpectedOutcome(), false);
         if (report.getActualResult() != null)
             embedBuilder.addField("Resultado real", report.getActualResult(), false);
         if (report.getServerName() != null)
-            embedBuilder.addField("Anomalia ocorrida em", report.getServerName() + "\n**\n**", false);
+            embedBuilder.addField("Servidor afetado", report.getServerName() + "\n", false);
         return embedBuilder.build();
     }
 

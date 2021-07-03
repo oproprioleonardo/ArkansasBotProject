@@ -5,15 +5,15 @@ import com.leonardo.arkansasproject.models.ReportStatus;
 
 public enum ReportDispatch {
 
-    ACTIVATED(new ReportDispatchDestination.ActivatedReport()),
-    ACCEPTED(new ReportDispatchDestination.AcceptedReport()),
-    ARCHIVED(new ReportDispatchDestination.ArchivedReport()),
-    REFUSED(new ReportDispatchDestination.RefusedReport());
+    ACTIVATED(new ReportDispatchInfo.ActivatedReport()),
+    ACCEPTED(new ReportDispatchInfo.AcceptedReport()),
+    ARCHIVED(new ReportDispatchInfo.ArchivedReport()),
+    REFUSED(new ReportDispatchInfo.RefusedReport());
 
-    private final ReportDispatchDestination reportDispatchDestination;
+    private final ReportDispatchInfo reportDispatchInfo;
 
-    ReportDispatch(ReportDispatchDestination reportDispatchDestination) {
-        this.reportDispatchDestination = reportDispatchDestination;
+    ReportDispatch(ReportDispatchInfo reportDispatchInfo) {
+        this.reportDispatchInfo = reportDispatchInfo;
     }
 
     public static ReportDispatch fromReportStatus(ReportStatus reportStatus) {
@@ -29,8 +29,8 @@ public enum ReportDispatch {
         }
     }
 
-    public ReportDispatchDestination getInstance(JsonObject config) {
-        if (!reportDispatchDestination.isLoaded()) reportDispatchDestination.load(config);
-        return reportDispatchDestination;
+    public ReportDispatchInfo getInstance(JsonObject config) {
+        if (!reportDispatchInfo.isLoaded()) reportDispatchInfo.load(config);
+        return reportDispatchInfo;
     }
 }

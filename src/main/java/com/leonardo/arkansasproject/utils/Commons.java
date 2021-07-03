@@ -10,16 +10,20 @@ import java.util.Map;
 public class Commons {
 
     public static EmbedBuilder buildInfoMsgFrom(Report report, User user) {
+        return buildInfoMsgFrom(report, user, new Color(59, 56, 209));
+    }
+
+    public static EmbedBuilder buildInfoMsgFrom(Report report, User user, Color color) {
         final EmbedBuilder builder = new EmbedBuilder()
-                .setColor(new Color(59, 56, 209))
+                .setColor(color)
                 .setAuthor(user.getAsTag() + " (" + user.getId() + ")")
                 .setTitle(report.getTitle(), "https://github.com/LeonardoCod3r")
                 .appendDescription("\n")
                 .addField("Resultado esperado", report.getExpectedOutcome(), false)
                 .addField("Resultado real", report.getActualResult(), false)
-                .addField("Anomalia ocorrida em", report.getServerName() + "\n**\n**", false);
+                .addField("Servidor afetado", report.getServerName() + "\n", false);
         report.getSteps().forEach(s -> builder.appendDescription("- " + s + "\n"));
-        builder.appendDescription("_\n_");
+        builder.appendDescription("\n");
         final Map<String, String> attachments = report.getAttachments();
         if (!attachments.isEmpty()) {
             final StringBuilder stringBuilder = new StringBuilder();
@@ -27,7 +31,7 @@ public class Commons {
             builder.addField("Anexos", stringBuilder.toString(), false);
         }
         builder.setTimestamp(report.getDate().toInstant());
-        builder.setFooter("ID: #" + report.getId());
+        builder.setFooter("#" + report.getId());
         return builder;
     }
 }

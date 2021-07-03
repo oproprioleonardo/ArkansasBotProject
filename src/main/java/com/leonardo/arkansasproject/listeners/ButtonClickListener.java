@@ -8,7 +8,9 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.leonardo.arkansasproject.dispatchers.Dispatcher;
 import com.leonardo.arkansasproject.dispatchers.ReportDispatch;
+import com.leonardo.arkansasproject.dispatchers.ReportDispatchInfo;
 import com.leonardo.arkansasproject.managers.ReportProcessingManager;
+import com.leonardo.arkansasproject.models.Bug;
 import com.leonardo.arkansasproject.models.BugCategory;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.models.ReportStatus;
@@ -42,6 +44,9 @@ public class ButtonClickListener extends ListenerAdapter {
     private ReportService service;
     @Inject
     private Dispatcher dispatcher;
+    @Inject
+    @Named("main_config")
+    private JsonObject config;
     private Set<BugCategory> categories;
 
     @Inject
@@ -94,24 +99,30 @@ public class ButtonClickListener extends ListenerAdapter {
                 final Function<Integer, Long> parseLong = (position) -> Long.parseLong(strings[position]);
                 if (componentId.startsWith("update-report-") && strings.length == 3) {
                     this.service.read(parseLong.apply(2))
-                                .invoke(report -> message.editMessage(Commons.buildInfoMsgFrom(report, user).build())
-                                                         .queue()).await().indefinitely();
+                                .invoke(report -> {
+                                    final ReportDispatchInfo info =
+                                            ReportDispatch.fromReportStatus(report.getStatus()).getInstance(config);
+                                    message.editMessage(Commons.buildInfoMsgFrom(report, user, info.getColor()).build())
+                                           .queue();
+                                }).await().indefinitely();
                 } else if (componentId.startsWith("update-report-status-") && strings.length == 4) {
                     this.service.read(parseLong.apply(3)).invoke(report -> {
+                        final ReportDispatchInfo info =
+                                ReportDispatch.fromReportStatus(report.getStatus()).getInstance(config);
                         switch (report.getStatus()) {
                             case ACTIVATED:
                                 message
-                                        .editMessage(Commons.buildInfoMsgFrom(report, user).build())
+                                        .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColor()).build())
                                         .setActionRow(
                                                 Button.success("update-report-status-accepted-" + report.getId(),
-                                                               "Aceitar"),
+                                                               "Aprovar"),
                                                 Button.danger("update-report-status-refused-" + report.getId(),
                                                               "Recusar")
                                         ).queue();
                                 break;
                             case ACCEPTED:
                                 message
-                                        .editMessage(Commons.buildInfoMsgFrom(report, user).build())
+                                        .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColor()).build())
                                         .setActionRow(
                                                 Button.secondary("update-report-status-archived-" + report.getId(),
                                                                  "Arquivar")
@@ -120,7 +131,7 @@ public class ButtonClickListener extends ListenerAdapter {
                             case ARCHIVED:
                             case REFUSED:
                                 message
-                                        .editMessage(Commons.buildInfoMsgFrom(report, user).build())
+                                        .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColor()).build())
                                         .setActionRow(
                                                 Button.secondary("update-report-status-activated-" + report.getId(),
                                                                  "Voltar a análise")
@@ -176,20 +187,19 @@ public class ButtonClickListener extends ListenerAdapter {
                     }).flatMap(bugs -> bugs.stream()
                                            .filter(bug -> bug.getId().equalsIgnoreCase(pattern))
                                            .findFirst()).ifPresent(bug -> this
-                            .updateStatus(id, ReportStatus.ACCEPTED, message,
-                                          bug.getRoles().toArray(new String[]{})));
+                            .updateStatus(id, ReportStatus.ACCEPTED, message, bug));
 
             }
         }
     }
 
-    private void updateStatus(long id, ReportStatus status, Message message, String... roleMentions) {
+    private void updateStatus(long id, ReportStatus status, Message message, Bug... bugs) {
         this.service.read(id).chain(report -> {
             report.setStatus(status);
             return this.service.update(report);
         }).invoke(report -> {
             message.delete().queue();
-            this.dispatcher.dispatch(ReportDispatch.fromReportStatus(status), report, roleMentions);
+            this.dispatcher.dispatch(ReportDispatch.fromReportStatus(status), report, bugs);
         }).await().indefinitely();
     }
 

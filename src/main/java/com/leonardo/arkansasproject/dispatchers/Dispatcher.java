@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.leonardo.arkansasproject.models.Bug;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.utils.Commons;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -28,22 +29,31 @@ public class Dispatcher {
     @Named(value = "main_config")
     private JsonObject config;
 
-    public void dispatch(ReportDispatch dispatchTarget, Report report, String... roleMentions) {
+    public void dispatch(ReportDispatch dispatchTarget, Report report, Bug... bugs) {
+        final ReportDispatchInfo destination = dispatchTarget.getInstance(config);
         final User user = report.getAuthor(jda);
         final Optional<TextChannel> channel =
-                Optional.ofNullable(jda.getTextChannelById(dispatchTarget.getInstance(config).getChannelId()));
-        final EmbedBuilder builder = Commons.buildInfoMsgFrom(report, user);
+                Optional.ofNullable(jda.getTextChannelById(destination.getChannelId()));
+        final EmbedBuilder builder = Commons.buildInfoMsgFrom(report, user, destination.getColor());
         channel.ifPresent(textChannel -> {
             MessageAction action = textChannel
                     .sendMessage(builder.build())
                     .setActionRow(
                             Button.success("update-report-" + report.getId(), "Atualizar"),
-                            Button.secondary("update-report-status-" + +report.getId(), "Editar status"));
-            final Optional<String> optional =
-                    Arrays.stream(roleMentions).map(s -> Objects.requireNonNull(jda.getRoleById(s)).getAsMention())
-                          .reduce((s, s2) -> s + ", " + s2);
-            if (optional.isPresent() && !optional.get().isEmpty()) action = action.allowedMentions(
-                    EnumSet.of(Message.MentionType.ROLE)).mentionRoles(roleMentions).content(optional.get());
+                            Button.secondary("update-report-status-" + report.getId(), "Editar status"));
+            if (bugs.length > 0) {
+                final Bug bug = bugs[0];
+                final String[] roles = bug.getRoles().toArray(new String[]{});
+                final Optional<String> optional =
+                        Arrays.stream(roles).map(s -> Objects.requireNonNull(jda.getRoleById(s)).getAsMention())
+                              .reduce((s, s2) -> s + " " + s2);
+                if (optional.isPresent()) {
+                    action = action.allowedMentions(
+                            EnumSet.of(Message.MentionType.ROLE))
+                                   .mentionRoles(roles)
+                                   .content(optional.get() + ", " + bug.getTag());
+                }
+            }
             action.queue();
         });
     }

@@ -14,6 +14,7 @@ import com.leonardo.arkansasproject.managers.ReportProcessingManager;
 import com.leonardo.arkansasproject.services.ReportService;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
+import org.apache.logging.log4j.LogManager;
 import org.ehcache.CacheManager;
 import org.hibernate.reactive.mutiny.Mutiny;
 
@@ -26,7 +27,7 @@ import java.nio.file.Files;
 public class Bot {
 
     private static Bot instance;
-    private final Injector injector;
+    private Injector injector;
     @Inject
     private CacheManager cacheManager;
     @Inject
@@ -46,8 +47,14 @@ public class Bot {
     public Bot() {
         instance = this;
         this.createConfigurationFile();
-        this.injector = Guice.createInjector(ArkansasModule.of(this));
-        this.injector.injectMembers(this);
+        try {
+            this.injector = Guice.createInjector(ArkansasModule.of(this));
+            this.injector.injectMembers(this);
+        } catch (Exception e) {
+            LogManager.getRootLogger().info("Configure seus dados em /botconfig/config.json");
+            System.exit(0);
+            return;
+        }
         this.jda.addEventListener(this.leadingExecutor);
         this.jda.addEventListener(
                 this.getInstance(MessageReceivedListener.class),

@@ -23,7 +23,7 @@ public class ReportProcessingManager {
                                              Long.class,
                                              ReportProcessing.class,
                                              ResourcePoolsBuilder
-                                                     .heap(100))
+                                                     .heap(30))
                                      .withExpiry(
                                              ExpiryPolicyBuilder
                                                      .timeToIdleExpiration(

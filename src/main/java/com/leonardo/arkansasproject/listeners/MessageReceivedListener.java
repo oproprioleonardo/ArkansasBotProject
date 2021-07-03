@@ -40,6 +40,11 @@ public class MessageReceivedListener extends ListenerAdapter {
             if (eventMessage.isFromGuild()) eventMessage.delete().queue();
             switch (reportProcessing.getProcessingState()) {
                 case ATTACH_STEP_BY_STEP:
+                    if (!Checker.characterLength(contentRaw, 80)) {
+                        channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed())
+                               .complete().delete().queueAfter(12, TimeUnit.SECONDS);
+                        return;
+                    }
                     Arrays.stream(contentRaw.split("\n")).forEach(s -> {
                         if (!s.isEmpty()) report.appendStep(s);
                     });

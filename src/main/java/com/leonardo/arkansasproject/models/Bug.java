@@ -10,5 +10,6 @@ public class Bug {
     private String id;
     private String description;
     private List<String> roles;
+    private String tag;
 
 }
