@@ -2,8 +2,8 @@ package com.leonardo.arkansasproject.executors;
 
 import com.google.inject.Inject;
 import com.leonardo.arkansasproject.services.ReportService;
-import com.leonardo.arkansasproject.validators.TextValidator;
 import com.leonardo.arkansasproject.utils.TemplateMessages;
+import com.leonardo.arkansasproject.validators.TextValidator;
 import io.smallrye.mutiny.Uni;
 import lombok.NoArgsConstructor;
 import net.dv8tion.jda.api.entities.MessageChannel;

@@ -25,12 +25,14 @@ public class Dispatcher {
 
     @Inject
     private JDA jda;
+
     @Inject
-    @Named(value = "main_config")
-    private JsonObject config;
+    private void loadDispatchers(@Named("main_config") JsonObject config) {
+        Arrays.stream(ReportDispatch.values()).forEach(reportDispatch -> reportDispatch.getInfo().load(config));
+    }
 
     public void dispatch(ReportDispatch dispatchTarget, Report report, Bug... bugs) {
-        final ReportDispatchInfo destination = dispatchTarget.getInfo(config);
+        final ReportDispatchInfo destination = dispatchTarget.getInfo();
         final User user = report.getAuthor(jda);
         final Optional<TextChannel> channel =
                 Optional.ofNullable(jda.getTextChannelById(destination.getChannelId()));

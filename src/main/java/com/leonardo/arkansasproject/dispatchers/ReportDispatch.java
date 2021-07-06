@@ -1,6 +1,5 @@
 package com.leonardo.arkansasproject.dispatchers;
 
-import com.google.gson.JsonObject;
 import com.leonardo.arkansasproject.models.ReportStatus;
 
 public enum ReportDispatch {
@@ -29,8 +28,7 @@ public enum ReportDispatch {
         }
     }
 
-    public ReportDispatchInfo getInfo(JsonObject config) {
-        if (!reportDispatchInfo.isLoaded()) reportDispatchInfo.load(config);
+    public ReportDispatchInfo getInfo() {
         return reportDispatchInfo;
     }
 }

@@ -7,8 +7,9 @@ import com.leonardo.arkansasproject.managers.ReportProcessingManager;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.models.ReportProcessing;
 import com.leonardo.arkansasproject.services.ReportService;
-import com.leonardo.arkansasproject.validators.TextValidator;
+import com.leonardo.arkansasproject.utils.Commons;
 import com.leonardo.arkansasproject.utils.TemplateMessages;
+import com.leonardo.arkansasproject.validators.TextValidator;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -34,11 +35,12 @@ public class MessageReceivedListener extends ListenerAdapter {
         if (TextValidator.isBotCommand(contentRaw.split(" ")[0])) return;
         final User author = event.getAuthor();
         final MessageChannel channel = eventMessage.getChannel();
-        if (this.manager.exists(author.getIdLong()) && channel.getIdLong() == event.getChannel().getIdLong()) {
-            final ReportProcessing reportProcessing = this.manager.get(author.getIdLong());
-            final Report report = reportProcessing.getReport();
+        if (this.manager.exists(author.getIdLong())) {
+            final ReportProcessing repProcess = this.manager.get(author.getIdLong());
+            if (channel.getIdLong() != repProcess.message.getChannel().getIdLong()) return;
+            final Report report = repProcess.getReport();
             if (eventMessage.isFromGuild()) eventMessage.delete().queue();
-            switch (reportProcessing.getProcessingState()) {
+            switch (repProcess.getProcessingState()) {
                 case ATTACH_STEP_BY_STEP:
                     if (!TextValidator.characterLength(contentRaw, 80)) {
                         channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed())
@@ -48,7 +50,7 @@ public class MessageReceivedListener extends ListenerAdapter {
                     Arrays.stream(contentRaw.split("\n")).forEach(s -> {
                         if (!s.isEmpty()) report.appendStep(s);
                     });
-                    reportProcessing.updateMessage(author);
+                    repProcess.updateMessage(author);
                     break;
                 case ATTACH_EXPECTED_RESULT:
                     if (!TextValidator.characterLength(contentRaw, 60)) {
@@ -57,9 +59,9 @@ public class MessageReceivedListener extends ListenerAdapter {
                         return;
                     }
                     report.setExpectedOutcome(contentRaw);
-                    reportProcessing.next(author, (rp, aBoolean) -> rp.message = rp.message.editMessage(
+                    repProcess.next(author, (rp, aBoolean) -> rp.message = rp.message.editMessage(
                             author.getName() + ", diga o que **realmente** aconteceu em poucas palavras.")
-                                                                                           .complete());
+                                                                                     .complete());
                     break;
                 case ATTACH_ACTUAL_RESULT:
                     if (!TextValidator.characterLength(contentRaw, 60)) {
@@ -68,17 +70,17 @@ public class MessageReceivedListener extends ListenerAdapter {
                         return;
                     }
                     report.setActualResult(contentRaw);
-                    reportProcessing.next(author, (rp, b) -> rp.message = rp.message.editMessage(
+                    repProcess.next(author, (rp, b) -> rp.message = rp.message.editMessage(
                             author.getName() + ", diga em qual servidor o bug ocorreu.").complete());
                     break;
                 case ATTACH_SERVER:
                     report.setServerName(contentRaw);
-                    reportProcessing.next(author, (rp, b) -> this.service
+                    repProcess.next(author, (rp, b) -> this.service
                             .create(report).invoke(() -> {
-                                                       channel.sendMessage(TemplateMessages.REPORT_SUCCESS.getMessageEmbed()).queue();
-                                                       channel.sendMessage(rp.buildMessage(author))
-                                                              .queue((msg) -> rp.message.delete().queue());
+                                                       rp.message.delete().queue();
                                                        this.manager.remove(author.getIdLong());
+                                                       channel.sendMessage(TemplateMessages.REPORT_SUCCESS.getMessageEmbed()).queue();
+                                                       channel.sendMessage(Commons.buildInfoMsgFrom(report, author).build()).queue();
                                                        this.dispatcher.dispatch(ReportDispatch.ACTIVATED, report);
                                                    }
                             ).await().indefinitely());

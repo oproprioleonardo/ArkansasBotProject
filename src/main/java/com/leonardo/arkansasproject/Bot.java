@@ -51,6 +51,7 @@ public class Bot {
             this.injector = Guice.createInjector(ArkansasModule.of(this));
             this.injector.injectMembers(this);
         } catch (Exception e) {
+            e.printStackTrace();
             LogManager.getRootLogger().info("Configure seus dados em /botconfig/config.json");
             System.exit(0);
             return;
