@@ -14,7 +14,7 @@ import com.leonardo.arkansasproject.models.Bug;
 import com.leonardo.arkansasproject.models.BugCategory;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.models.ReportStatus;
-import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
+import com.leonardo.arkansasproject.models.ReportProcessing;
 import com.leonardo.arkansasproject.services.ReportService;
 import com.leonardo.arkansasproject.utils.Commons;
 import com.leonardo.arkansasproject.utils.TemplateMessages;
@@ -101,18 +101,18 @@ public class ButtonClickListener extends ListenerAdapter {
                     this.service.read(parseLong.apply(2))
                                 .invoke(report -> {
                                     final ReportDispatchInfo info =
-                                            ReportDispatch.fromReportStatus(report.getStatus()).getInstance(config);
-                                    message.editMessage(Commons.buildInfoMsgFrom(report, user, info.getColor()).build())
+                                            ReportDispatch.fromReportStatus(report.getStatus()).getInfo(config);
+                                    message.editMessage(Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
                                            .queue();
                                 }).await().indefinitely();
                 } else if (componentId.startsWith("update-report-status-") && strings.length == 4) {
                     this.service.read(parseLong.apply(3)).invoke(report -> {
                         final ReportDispatchInfo info =
-                                ReportDispatch.fromReportStatus(report.getStatus()).getInstance(config);
+                                ReportDispatch.fromReportStatus(report.getStatus()).getInfo(config);
                         switch (report.getStatus()) {
                             case ACTIVATED:
                                 message
-                                        .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColor()).build())
+                                        .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
                                         .setActionRow(
                                                 Button.success("update-report-status-accepted-" + report.getId(),
                                                                "Aprovar"),
@@ -122,7 +122,7 @@ public class ButtonClickListener extends ListenerAdapter {
                                 break;
                             case ACCEPTED:
                                 message
-                                        .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColor()).build())
+                                        .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
                                         .setActionRow(
                                                 Button.secondary("update-report-status-archived-" + report.getId(),
                                                                  "Arquivar")
@@ -131,7 +131,7 @@ public class ButtonClickListener extends ListenerAdapter {
                             case ARCHIVED:
                             case REFUSED:
                                 message
-                                        .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColor()).build())
+                                        .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
                                         .setActionRow(
                                                 Button.secondary("update-report-status-activated-" + report.getId(),
                                                                  "Voltar a análise")

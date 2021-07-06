@@ -10,58 +10,26 @@ public interface ReportDispatchInfo {
 
     String getRouteInConfig();
 
-    Color getColor();
+    Color getColorMessage();
 
     boolean isLoaded();
 
     void load(JsonObject config);
 
-    class ActivatedReport extends ReportDispatchInfoImpl {
-        @Override
-        public String getRouteInConfig() {
-            return "ACTIVATED_REPORTS_CHANNEL";
-        }
-
-        @Override
-        public Color getColor() {
-            return new Color(236, 255, 43);
-        }
+    static ReportDispatchInfo asActivatedReport() {
+        return new ReportDispatchInfoImpl("ACTIVATED_REPORTS_CHANNEL", new Color(236, 255, 43));
     }
 
-    class RefusedReport extends ReportDispatchInfoImpl {
-        @Override
-        public String getRouteInConfig() {
-            return "REFUSED_REPORTS_CHANNEL";
-        }
-
-        @Override
-        public Color getColor() {
-            return new Color(201, 30, 30);
-        }
+    static ReportDispatchInfo asRefusedReport() {
+        return new ReportDispatchInfoImpl("REFUSED_REPORTS_CHANNEL", new Color(201, 30, 30));
     }
 
-    class AcceptedReport extends ReportDispatchInfoImpl {
-        @Override
-        public String getRouteInConfig() {
-            return "ACCEPTED_REPORTS_CHANNEL";
-        }
-
-        @Override
-        public Color getColor() {
-            return new Color(40, 239, 32);
-        }
+    static ReportDispatchInfo asAcceptedReport() {
+        return new ReportDispatchInfoImpl("ACCEPTED_REPORTS_CHANNEL", new Color(40, 239, 32));
     }
 
-    class ArchivedReport extends ReportDispatchInfoImpl {
-        @Override
-        public String getRouteInConfig() {
-            return "ARCHIVED_REPORTS_CHANNEL";
-        }
-
-        @Override
-        public Color getColor() {
-            return new Color(177, 177, 177, 255);
-        }
+    static ReportDispatchInfo asArchivedReport() {
+        return new ReportDispatchInfoImpl("ARCHIVED_REPORTS_CHANNEL", new Color(177, 177, 177, 255));
     }
 
 }

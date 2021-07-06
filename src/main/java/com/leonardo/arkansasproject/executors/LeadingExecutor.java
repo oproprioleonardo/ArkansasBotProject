@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import com.google.inject.Singleton;
 import com.leonardo.arkansasproject.Bot;
-import com.leonardo.arkansasproject.utils.Checker;
+import com.leonardo.arkansasproject.validators.TextValidator;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -47,7 +47,7 @@ public class LeadingExecutor extends ListenerAdapter {
         final String text = message.getContentRaw();
         final String[] args = text.split(" ");
         final String cmd = args[0];
-        if (Checker.isBotCommand(cmd)) {
+        if (TextValidator.isBotCommand(cmd)) {
             final List<String> arguments = Lists.newArrayList(args);
             arguments.remove(0);
             this.executors.entrySet().stream()

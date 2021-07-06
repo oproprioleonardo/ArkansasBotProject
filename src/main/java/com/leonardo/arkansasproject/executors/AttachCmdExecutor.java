@@ -2,7 +2,7 @@ package com.leonardo.arkansasproject.executors;
 
 import com.google.inject.Inject;
 import com.leonardo.arkansasproject.services.ReportService;
-import com.leonardo.arkansasproject.utils.Checker;
+import com.leonardo.arkansasproject.validators.TextValidator;
 import com.leonardo.arkansasproject.utils.TemplateMessages;
 import io.smallrye.mutiny.Uni;
 import lombok.NoArgsConstructor;
@@ -34,14 +34,14 @@ public class AttachCmdExecutor implements Executor {
                           .invoke(() -> channel.sendMessage(TemplateMessages.NOT_EXISTS_REPORT.getMessageEmbed())
                                                .queue())
                           .onItem().ifNotNull().call(report -> {
-            if (!Checker.isUrl(args[1])) {
+            if (!TextValidator.isUrl(args[1])) {
                 channel.sendMessage(TemplateMessages.NOT_URL.getMessageEmbed()).complete().delete()
                        .queueAfter(12, TimeUnit.SECONDS);
                 return Uni.createFrom().nothing();
             }
             final String[] textArgs = Arrays.copyOfRange(args, 2, (args.length));
             final String text = String.join(" ", textArgs);
-            if (!Checker.characterLength(text, 1, 40)) {
+            if (!TextValidator.characterLength(text, 1, 40)) {
                 channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed()).complete()
                        .delete()
                        .queueAfter(12, TimeUnit.SECONDS);

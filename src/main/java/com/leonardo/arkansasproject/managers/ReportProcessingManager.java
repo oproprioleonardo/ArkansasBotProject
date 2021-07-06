@@ -1,7 +1,7 @@
 package com.leonardo.arkansasproject.managers;
 
 import com.google.inject.Singleton;
-import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
+import com.leonardo.arkansasproject.models.ReportProcessing;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;

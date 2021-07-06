@@ -30,11 +30,11 @@ public class Dispatcher {
     private JsonObject config;
 
     public void dispatch(ReportDispatch dispatchTarget, Report report, Bug... bugs) {
-        final ReportDispatchInfo destination = dispatchTarget.getInstance(config);
+        final ReportDispatchInfo destination = dispatchTarget.getInfo(config);
         final User user = report.getAuthor(jda);
         final Optional<TextChannel> channel =
                 Optional.ofNullable(jda.getTextChannelById(destination.getChannelId()));
-        final EmbedBuilder builder = Commons.buildInfoMsgFrom(report, user, destination.getColor());
+        final EmbedBuilder builder = Commons.buildInfoMsgFrom(report, user, destination.getColorMessage());
         channel.ifPresent(textChannel -> {
             MessageAction action = textChannel
                     .sendMessage(builder.build())

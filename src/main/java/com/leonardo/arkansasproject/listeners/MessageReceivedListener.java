@@ -5,9 +5,9 @@ import com.leonardo.arkansasproject.dispatchers.Dispatcher;
 import com.leonardo.arkansasproject.dispatchers.ReportDispatch;
 import com.leonardo.arkansasproject.managers.ReportProcessingManager;
 import com.leonardo.arkansasproject.models.Report;
-import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
+import com.leonardo.arkansasproject.models.ReportProcessing;
 import com.leonardo.arkansasproject.services.ReportService;
-import com.leonardo.arkansasproject.utils.Checker;
+import com.leonardo.arkansasproject.validators.TextValidator;
 import com.leonardo.arkansasproject.utils.TemplateMessages;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -31,7 +31,7 @@ public class MessageReceivedListener extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         final Message eventMessage = event.getMessage();
         final String contentRaw = eventMessage.getContentRaw();
-        if (Checker.isBotCommand(contentRaw.split(" ")[0])) return;
+        if (TextValidator.isBotCommand(contentRaw.split(" ")[0])) return;
         final User author = event.getAuthor();
         final MessageChannel channel = eventMessage.getChannel();
         if (this.manager.exists(author.getIdLong()) && channel.getIdLong() == event.getChannel().getIdLong()) {
@@ -40,7 +40,7 @@ public class MessageReceivedListener extends ListenerAdapter {
             if (eventMessage.isFromGuild()) eventMessage.delete().queue();
             switch (reportProcessing.getProcessingState()) {
                 case ATTACH_STEP_BY_STEP:
-                    if (!Checker.characterLength(contentRaw, 80)) {
+                    if (!TextValidator.characterLength(contentRaw, 80)) {
                         channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed())
                                .complete().delete().queueAfter(12, TimeUnit.SECONDS);
                         return;
@@ -51,7 +51,7 @@ public class MessageReceivedListener extends ListenerAdapter {
                     reportProcessing.updateMessage(author);
                     break;
                 case ATTACH_EXPECTED_RESULT:
-                    if (!Checker.characterLength(contentRaw, 60)) {
+                    if (!TextValidator.characterLength(contentRaw, 60)) {
                         channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed())
                                .complete().delete().queueAfter(12, TimeUnit.SECONDS);
                         return;
@@ -62,7 +62,7 @@ public class MessageReceivedListener extends ListenerAdapter {
                                                                                            .complete());
                     break;
                 case ATTACH_ACTUAL_RESULT:
-                    if (!Checker.characterLength(contentRaw, 60)) {
+                    if (!TextValidator.characterLength(contentRaw, 60)) {
                         channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed())
                                .complete().delete().queueAfter(12, TimeUnit.SECONDS);
                         return;

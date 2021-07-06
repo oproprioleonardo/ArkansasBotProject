@@ -5,10 +5,10 @@ import com.leonardo.arkansasproject.models.ReportStatus;
 
 public enum ReportDispatch {
 
-    ACTIVATED(new ReportDispatchInfo.ActivatedReport()),
-    ACCEPTED(new ReportDispatchInfo.AcceptedReport()),
-    ARCHIVED(new ReportDispatchInfo.ArchivedReport()),
-    REFUSED(new ReportDispatchInfo.RefusedReport());
+    ACTIVATED(ReportDispatchInfo.asActivatedReport()),
+    ACCEPTED(ReportDispatchInfo.asAcceptedReport()),
+    ARCHIVED(ReportDispatchInfo.asArchivedReport()),
+    REFUSED(ReportDispatchInfo.asRefusedReport());
 
     private final ReportDispatchInfo reportDispatchInfo;
 
@@ -29,7 +29,7 @@ public enum ReportDispatch {
         }
     }
 
-    public ReportDispatchInfo getInstance(JsonObject config) {
+    public ReportDispatchInfo getInfo(JsonObject config) {
         if (!reportDispatchInfo.isLoaded()) reportDispatchInfo.load(config);
         return reportDispatchInfo;
     }

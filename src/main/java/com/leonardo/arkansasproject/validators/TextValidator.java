@@ -1,8 +1,8 @@
-package com.leonardo.arkansasproject.utils;
+package com.leonardo.arkansasproject.validators;
 
 import java.util.regex.Pattern;
 
-public class Checker {
+public class TextValidator {
     private static final Pattern pattern = Pattern.compile(
             "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.][a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?"
     );

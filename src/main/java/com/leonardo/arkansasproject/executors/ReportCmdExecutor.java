@@ -3,8 +3,8 @@ package com.leonardo.arkansasproject.executors;
 import com.google.inject.Inject;
 import com.leonardo.arkansasproject.managers.ReportProcessingManager;
 import com.leonardo.arkansasproject.models.Report;
-import com.leonardo.arkansasproject.models.suppliers.ReportProcessing;
-import com.leonardo.arkansasproject.utils.Checker;
+import com.leonardo.arkansasproject.models.ReportProcessing;
+import com.leonardo.arkansasproject.validators.TextValidator;
 import com.leonardo.arkansasproject.utils.TemplateMessages;
 import lombok.NoArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -38,7 +38,7 @@ public class ReportCmdExecutor implements Executor {
             return;
         }
         final String title = String.join(" ", args);
-        if (!Checker.characterLength(title)) {
+        if (!TextValidator.characterLength(title)) {
             channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed()).complete().delete()
                    .queueAfter(12, TimeUnit.SECONDS);
             return;
