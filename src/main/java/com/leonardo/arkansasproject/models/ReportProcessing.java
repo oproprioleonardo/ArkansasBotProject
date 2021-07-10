@@ -27,8 +27,8 @@ public class ReportProcessing {
     public MessageEmbed buildMessage(User user) {
         final EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setColor(new Color(59, 56, 209))
-                .setAuthor(user.getAsTag() + " (" + report.getUserId() + ")")
-                .setTitle(report.getTitle(), "https://github.com/LeonardoCod3r")
+                .appendDescription("**[" + report.getTitle() + "]" + "(https://hylex.me/bugs)**\n")
+                .setAuthor(user.getAsTag() + " (" + user.getId() + ")")
                 .appendDescription("\n");
         report.getSteps().forEach(s -> embedBuilder
                 .appendDescription("- ")
@@ -41,6 +41,10 @@ public class ReportProcessing {
             embedBuilder.addField("Resultado real", report.getActualResult(), false);
         if (report.getServerName() != null)
             embedBuilder.addField("Servidor afetado", report.getServerName() + "\n", false);
+        if (report.getId() != null) {
+            embedBuilder.setTimestamp(report.getDate().toInstant());
+            embedBuilder.setFooter("#" + report.getId() + " • " + report.getStatus().getLabel());
+        }
         return embedBuilder.build();
     }
 

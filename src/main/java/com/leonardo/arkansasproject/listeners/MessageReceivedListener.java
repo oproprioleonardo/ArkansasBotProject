@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.Button;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -80,7 +81,9 @@ public class MessageReceivedListener extends ListenerAdapter {
                                                        rp.message.delete().queue();
                                                        this.manager.remove(author.getIdLong());
                                                        channel.sendMessage(TemplateMessages.REPORT_SUCCESS.getMessageEmbed()).queue();
-                                                       channel.sendMessage(Commons.buildInfoMsgFrom(report, author).build()).queue();
+                                                       channel.sendMessage(Commons.buildInfoMsgFrom(report, author).build()).setActionRow(
+                                                               Button.success("update-report-" + report.getId(), "Atualizar")
+                                                       ).queue();
                                                        this.dispatcher.dispatch(ReportDispatch.ACTIVATED, report);
                                                    }
                             ).await().indefinitely());

@@ -17,7 +17,7 @@ public class Commons {
         final EmbedBuilder builder = new EmbedBuilder()
                 .setColor(color)
                 .setAuthor(user.getAsTag() + " (" + user.getId() + ")")
-                .setTitle(report.getTitle(), "https://github.com/LeonardoCod3r")
+                .appendDescription("**[" + report.getTitle() + "]" + "(https://hylex.me/bugs)**\n")
                 .appendDescription("\n")
                 .addField("Resultado esperado", report.getExpectedOutcome(), false)
                 .addField("Resultado real", report.getActualResult(), false)
@@ -27,11 +27,13 @@ public class Commons {
         final Map<String, String> attachments = report.getAttachments();
         if (!attachments.isEmpty()) {
             final StringBuilder stringBuilder = new StringBuilder();
-            attachments.forEach((s, s2) -> stringBuilder.append(s).append(": ").append(s2).append("\n"));
+            attachments.forEach(
+                    (s, s2) -> stringBuilder.append("**[").append(s).append("](").append(s2).append(")**")
+                                            .append("\n"));
             builder.addField("Anexos", stringBuilder.toString(), false);
         }
         builder.setTimestamp(report.getDate().toInstant());
-        builder.setFooter("#" + report.getId());
+        builder.setFooter("#" + report.getId() + " • " + report.getStatus().getLabel());
         return builder;
     }
 }

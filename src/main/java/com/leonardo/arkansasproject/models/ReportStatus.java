@@ -15,10 +15,10 @@ public enum ReportStatus {
     REFUSED("Recusado");
 
     @Getter
-    private final String value;
+    private final String label;
 
-    ReportStatus(String value) {
-        this.value = value;
+    ReportStatus(String label) {
+        this.label = label;
     }
 
 }

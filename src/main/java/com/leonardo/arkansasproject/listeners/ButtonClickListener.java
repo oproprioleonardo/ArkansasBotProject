@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.interactions.components.Component;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.dv8tion.jda.api.requests.restaction.interactions.UpdateInteractionAction;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -48,6 +49,52 @@ public class ButtonClickListener extends ListenerAdapter {
               .forEach(jsonElement -> this.categories.add(gson.fromJson(jsonElement, BugCategory.class)));
     }
 
+    private void buildBugCategoryButton(String pattern, UpdateInteractionAction action, Long id) {
+        this.categories
+                .stream()
+                .filter(bugCategory -> bugCategory.getId().equalsIgnoreCase(pattern))
+                .findFirst().ifPresent(bugCategory -> {
+            final Set<Component> set = bugCategory.getBugs().stream().map(bug -> Button
+                    .primary(id + "---" + bug.getId(), bug.getDescription())).collect(
+                    Collectors.toSet());
+            action.setActionRow(set).queue();
+        });
+    }
+
+    private void buildBugButton(String pattern, Long id) {
+        this.categories.stream().map(BugCategory::getBugs).reduce((bugs, bugs2) -> {
+            bugs.addAll(bugs2);
+            return bugs;
+        }).flatMap(bugs -> bugs.stream()
+                               .filter(bug -> bug.getId().equalsIgnoreCase(pattern))
+                               .findFirst()).ifPresent(bug -> this
+                .updateStatus(id, ReportStatus.ACCEPTED, bug));
+    }
+
+    private void updateReportInfoMessage(Long id, Message message, User user, boolean isPrivateMessage) {
+        this.service.read(id)
+                    .invoke(report -> {
+                        final ReportDispatchInfo info =
+                                ReportDispatch.fromReportStatus(report.getStatus()).getInfo();
+                        MessageAction action = message.editMessage(
+                                Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build());
+                        if (isPrivateMessage) action =
+                                action.setActionRow(Button.success("update-report-" + report.getId(), "Atualizar"));
+                        else action = action.setActionRow(
+                                Button.success("update-report-" + report.getId(), "Atualizar"),
+                                Button.secondary("update-report-status-" + report.getId(), "Editar status"));
+                        action.queue();
+                    }).await().indefinitely();
+    }
+
+    private void updateStatus(long id, ReportStatus status, Bug... bugs) {
+        this.service.read(id).chain(report -> {
+            report.setStatus(status);
+            return this.service.update(report);
+        }).invoke(report -> this.dispatcher.dispatch(ReportDispatch.fromReportStatus(status), report, bugs)).await()
+                    .indefinitely();
+    }
+
     @Override
     public void onButtonClick(ButtonClickEvent event) {
         final User user = event.getUser();
@@ -56,6 +103,10 @@ public class ButtonClickListener extends ListenerAdapter {
         final String componentId = event.getComponentId();
         final ButtonInteraction interaction = event.getInteraction();
         if (message == null) return;
+        if (message.getEmbeds().isEmpty()) {
+            message.delete().queue();
+            return;
+        }
         if ("confirm-next".equals(componentId)) {
             if (!manager.exists(user.getIdLong())) return;
             final ReportProcessing reportProcessing = manager.get(user.getIdLong());
@@ -75,123 +126,102 @@ public class ButtonClickListener extends ListenerAdapter {
                         ", diga o que **deveria** acontecer normalmente em poucas palavras.")
                                                                                     .complete());
             }
-        } else if (componentId.startsWith("update-report")) {
+        } else if (componentId.contains("-")) {
             final String[] strings = componentId.split("-");
-            interaction.deferEdit().queue();
+            final UpdateInteractionAction deferEdit = interaction.deferEdit();
             final Function<Integer, Long> parseLong = (position) -> Long.parseLong(strings[position]);
-            if (componentId.startsWith("update-report-") && strings.length == 3) {
-                this.service.read(parseLong.apply(2))
-                            .invoke(report -> {
-                                final ReportDispatchInfo info =
-                                        ReportDispatch.fromReportStatus(report.getStatus()).getInfo();
-                                message.editMessage(
-                                        Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
-                                       .queue();
+            if (componentId.startsWith("cancel-action-")) {
+                deferEdit.queue();
+                updateReportInfoMessage(parseLong.apply(2), message, user, false);
+            } else if (componentId.startsWith("update-report-")) {
+                deferEdit.queue();
+                if (strings.length == 3) {
+                    updateReportInfoMessage(parseLong.apply(2), message, user, Arrays.stream(ReportDispatch.values())
+                                                                                     .noneMatch(rd -> rd.getInfo()
+                                                                                                        .getChannelId()
+                                                                                                        .equals(channel.getId())));
+                } else if (componentId.startsWith("update-report-status-") && strings.length == 4) {
+                    this.service.read(parseLong.apply(3)).invoke(report -> {
+                        final ReportDispatchInfo info =
+                                ReportDispatch.fromReportStatus(report.getStatus()).getInfo();
+                        switch (report.getStatus()) {
+                            case ACTIVATED:
+                                message
+                                        .editMessage(
+                                                Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
+                                        .setActionRow(
+                                                Button.success("update-report-status-accepted-" + report.getId(),
+                                                               "Aprovar"),
+                                                Button.danger("update-report-status-refused-" + report.getId(),
+                                                              "Recusar"),
+                                                Button.secondary("cancel-action-" + report.getId(),
+                                                                 "Cancelar")
+                                        ).queue();
+                                break;
+                            case ACCEPTED:
+                                message
+                                        .editMessage(
+                                                Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
+                                        .setActionRow(
+                                                Button.secondary("update-report-status-archived-" + report.getId(),
+                                                                 "Arquivar"),
+                                                Button.danger("cancel-action-" + report.getId(),
+                                                              "Cancelar")
+                                        ).queue();
+                                break;
+                            case ARCHIVED:
+                            case REFUSED:
+                                message
+                                        .editMessage(
+                                                Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
+                                        .setActionRow(
+                                                Button.secondary("update-report-status-activated-" + report.getId(),
+                                                                 "Voltar a análise"),
+                                                Button.danger("cancel-action-" + report.getId(),
+                                                              "Cancelar")
+                                        ).queue();
+                                break;
+                        }
+                    }).await().indefinitely();
+                } else if (componentId.startsWith("update-report-status-")) {
+                    final Long id = parseLong.apply(4);
+                    switch (strings[3]) {
+                        case "accepted":
+                            this.service.read(id).invoke(report -> {
+                                final MessageAction action =
+                                        message.editMessage(Commons.buildInfoMsgFrom(report, user).build());
+                                final Set<Component> set = this.categories.stream().map(bugCategory -> Button
+                                        .primary(id + "---" + bugCategory.getId(), bugCategory.getLabel())).collect(
+                                        Collectors.toSet());
+                                action.setActionRow(set).queue();
                             }).await().indefinitely();
-            } else if (componentId.startsWith("update-report-status-") && strings.length == 4) {
-                this.service.read(parseLong.apply(3)).invoke(report -> {
-                    final ReportDispatchInfo info =
-                            ReportDispatch.fromReportStatus(report.getStatus()).getInfo();
-                    switch (report.getStatus()) {
-                        case ACTIVATED:
-                            message
-                                    .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
-                                    .setActionRow(
-                                            Button.success("update-report-status-accepted-" + report.getId(),
-                                                           "Aprovar"),
-                                            Button.danger("update-report-status-refused-" + report.getId(),
-                                                          "Recusar")
-                                    ).queue();
+                            return;
+                        case "refused":
+                            this.updateStatus(id, ReportStatus.REFUSED);
                             break;
-                        case ACCEPTED:
-                            message
-                                    .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
-                                    .setActionRow(
-                                            Button.secondary("update-report-status-archived-" + report.getId(),
-                                                             "Arquivar")
-                                    ).queue();
+                        case "archived":
+                            this.updateStatus(id, ReportStatus.ARCHIVED);
                             break;
-                        case ARCHIVED:
-                        case REFUSED:
-                            message
-                                    .editMessage(Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
-                                    .setActionRow(
-                                            Button.secondary("update-report-status-activated-" + report.getId(),
-                                                             "Voltar a análise")
-                                    ).queue();
+                        case "activated":
+                            this.updateStatus(id, ReportStatus.ACTIVATED);
                             break;
                     }
-                }).await().indefinitely();
-            } else if (componentId.startsWith("update-report-status-")) {
-                final Long id = parseLong.apply(4);
-                switch (strings[3]) {
-                    case "accepted":
-                        this.service.read(id).invoke(report -> {
-                            final MessageAction action =
-                                    message.editMessage(Commons.buildInfoMsgFrom(report, user).build());
-                            final Set<Component> set = this.categories.stream().map(bugCategory -> Button
-                                    .primary(id + "---" + bugCategory.getId(), bugCategory.getLabel())).collect(
-                                    Collectors.toSet());
-                            action.setActionRow(set).queue();
-                        }).await().indefinitely();
-                        return;
-                    case "refused":
-                        this.updateStatus(id, ReportStatus.REFUSED);
-                        break;
-                    case "archived":
-                        this.updateStatus(id, ReportStatus.ARCHIVED);
-                        break;
-                    case "activated":
-                        this.updateStatus(id, ReportStatus.ACTIVATED);
-                        break;
+                    message.delete().queue();
                 }
-                message.delete().queue();
-            }
-        } else if (componentId.contains("---") && componentId.split("---").length == 2) {
-            final String[] args = componentId.split("---");
-            final long id = Long.parseLong(args[0]);
-            final String pattern = args[1];
-            final boolean match = this.categories.stream().anyMatch(
-                    bugCategory -> bugCategory.getId().equalsIgnoreCase(pattern));
-            if (match)
-                this.buildBugCategoryButton(pattern, interaction, id);
-            else {
-                this.buildBugButton(pattern, id);
-                message.delete().queue();
-            }
+            } else if (componentId.contains("---") && componentId.split("---").length == 2) {
+                final String[] args = componentId.split("---");
+                final long id = Long.parseLong(args[0]);
+                final String pattern = args[1];
+                if (this.categories.stream().anyMatch(
+                        bugCategory -> bugCategory.getId().equalsIgnoreCase(pattern)))
+                    this.buildBugCategoryButton(pattern, deferEdit, id);
+                else {
+                    this.buildBugButton(pattern, id);
+                    message.delete().queue();
+                }
 
+            }
         }
-    }
-
-    private void buildBugCategoryButton(String pattern, ButtonInteraction interaction, Long id) {
-        this.categories
-                .stream()
-                .filter(bugCategory -> bugCategory.getId().equalsIgnoreCase(pattern))
-                .findFirst().ifPresent(bugCategory -> {
-            final UpdateInteractionAction action = interaction.deferEdit();
-            final Set<Component> set = bugCategory.getBugs().stream().map(bug -> Button
-                    .primary(id + "---" + bug.getId(), bug.getDescription())).collect(
-                    Collectors.toSet());
-            action.setActionRow(set).queue();
-        });
-    }
-
-    private void buildBugButton(String pattern, Long id) {
-        this.categories.stream().map(BugCategory::getBugs).reduce((bugs, bugs2) -> {
-            bugs.addAll(bugs2);
-            return bugs;
-        }).flatMap(bugs -> bugs.stream()
-                               .filter(bug -> bug.getId().equalsIgnoreCase(pattern))
-                               .findFirst()).ifPresent(bug -> this
-                .updateStatus(id, ReportStatus.ACCEPTED, bug));
-    }
-
-    private void updateStatus(long id, ReportStatus status, Bug... bugs) {
-        this.service.read(id).chain(report -> {
-            report.setStatus(status);
-            return this.service.update(report);
-        }).invoke(report -> this.dispatcher.dispatch(ReportDispatch.fromReportStatus(status), report, bugs)).await()
-                    .indefinitely();
     }
 
 }
