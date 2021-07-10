@@ -103,10 +103,6 @@ public class ButtonClickListener extends ListenerAdapter {
         final String componentId = event.getComponentId();
         final ButtonInteraction interaction = event.getInteraction();
         if (message == null) return;
-        if (message.getEmbeds().isEmpty()) {
-            message.delete().queue();
-            return;
-        }
         if ("confirm-next".equals(componentId)) {
             if (!manager.exists(user.getIdLong())) return;
             final ReportProcessing reportProcessing = manager.get(user.getIdLong());
@@ -144,42 +140,36 @@ public class ButtonClickListener extends ListenerAdapter {
                     this.service.read(parseLong.apply(3)).invoke(report -> {
                         final ReportDispatchInfo info =
                                 ReportDispatch.fromReportStatus(report.getStatus()).getInfo();
+                        final MessageAction action = message
+                                .editMessage(
+                                        Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build());
                         switch (report.getStatus()) {
                             case ACTIVATED:
-                                message
-                                        .editMessage(
-                                                Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
-                                        .setActionRow(
-                                                Button.success("update-report-status-accepted-" + report.getId(),
-                                                               "Aprovar"),
-                                                Button.danger("update-report-status-refused-" + report.getId(),
-                                                              "Recusar"),
-                                                Button.secondary("cancel-action-" + report.getId(),
-                                                                 "Cancelar")
-                                        ).queue();
+                                action.setActionRow(
+                                        Button.success("update-report-status-accepted-" + report.getId(),
+                                                       "Aprovar"),
+                                        Button.danger("update-report-status-refused-" + report.getId(),
+                                                      "Recusar"),
+                                        Button.secondary("cancel-action-" + report.getId(),
+                                                         "Cancelar")
+                                ).queue();
                                 break;
                             case ACCEPTED:
-                                message
-                                        .editMessage(
-                                                Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
-                                        .setActionRow(
-                                                Button.secondary("update-report-status-archived-" + report.getId(),
-                                                                 "Arquivar"),
-                                                Button.danger("cancel-action-" + report.getId(),
-                                                              "Cancelar")
-                                        ).queue();
+                                action.setActionRow(
+                                        Button.secondary("update-report-status-archived-" + report.getId(),
+                                                         "Arquivar"),
+                                        Button.danger("cancel-action-" + report.getId(),
+                                                      "Cancelar")
+                                ).queue();
                                 break;
                             case ARCHIVED:
                             case REFUSED:
-                                message
-                                        .editMessage(
-                                                Commons.buildInfoMsgFrom(report, user, info.getColorMessage()).build())
-                                        .setActionRow(
-                                                Button.secondary("update-report-status-activated-" + report.getId(),
-                                                                 "Voltar a análise"),
-                                                Button.danger("cancel-action-" + report.getId(),
-                                                              "Cancelar")
-                                        ).queue();
+                                action.setActionRow(
+                                        Button.secondary("update-report-status-activated-" + report.getId(),
+                                                         "Voltar a análise"),
+                                        Button.danger("cancel-action-" + report.getId(),
+                                                      "Cancelar")
+                                ).queue();
                                 break;
                         }
                     }).await().indefinitely();
@@ -197,13 +187,9 @@ public class ButtonClickListener extends ListenerAdapter {
                             }).await().indefinitely();
                             return;
                         case "refused":
-                            this.updateStatus(id, ReportStatus.REFUSED);
-                            break;
                         case "archived":
-                            this.updateStatus(id, ReportStatus.ARCHIVED);
-                            break;
                         case "activated":
-                            this.updateStatus(id, ReportStatus.ACTIVATED);
+                            this.updateStatus(id, ReportStatus.valueOf(strings[3].toUpperCase()));
                             break;
                     }
                     message.delete().queue();
