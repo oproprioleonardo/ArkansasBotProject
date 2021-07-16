@@ -1,12 +1,11 @@
 package com.leonardo.arkansasproject.di;
 
-import com.google.gson.JsonObject;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Names;
 import com.leonardo.arkansasproject.Bot;
 import com.leonardo.arkansasproject.dispatchers.Dispatcher;
+import com.leonardo.arkansasproject.managers.ConfigManager;
 import com.leonardo.arkansasproject.repositories.ReportRepository;
 import com.leonardo.arkansasproject.repositories.ReportRepositoryImpl;
 import com.leonardo.arkansasproject.services.ReportService;
@@ -30,7 +29,7 @@ public class ArkansasModule extends AbstractModule {
 
     protected void configure() {
         bind(Bot.class).toInstance(this.bot);
-        bind(JsonObject.class).annotatedWith(Names.named("main_config")).toInstance(this.bot.getConfig());
+        bind(ConfigManager.class);
         bind(ReportRepository.class).to(ReportRepositoryImpl.class);
         bind(ReportService.class).to(ReportServiceImpl.class);
         bind(Dispatcher.class);
@@ -53,10 +52,11 @@ public class ArkansasModule extends AbstractModule {
     @SneakyThrows
     @Provides
     @Singleton
-    public JDA providesJDA() {
-        final JDABuilder jdaBuilder = JDABuilder.createDefault(bot.getConfig().get("CLIENT_TOKEN").getAsString());
+    public JDA providesJDA(ConfigManager manager) {
+        final JDABuilder jdaBuilder = JDABuilder.createDefault(manager.getConfig().get("CLIENT_TOKEN").getAsString());
         jdaBuilder.disableCache(CacheFlag.VOICE_STATE);
-        jdaBuilder.setActivity(Activity.watching("Control Server"));
+        jdaBuilder.setActivity(Activity.watching("Hylex Servers"));
+        jdaBuilder.setAutoReconnect(true);
         return jdaBuilder.build();
     }
 }

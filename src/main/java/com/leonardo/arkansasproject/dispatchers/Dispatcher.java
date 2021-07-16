@@ -1,9 +1,8 @@
 package com.leonardo.arkansasproject.dispatchers;
 
-import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
+import com.leonardo.arkansasproject.managers.ConfigManager;
 import com.leonardo.arkansasproject.models.Bug;
 import com.leonardo.arkansasproject.models.Report;
 import com.leonardo.arkansasproject.utils.Commons;
@@ -27,8 +26,9 @@ public class Dispatcher {
     private JDA jda;
 
     @Inject
-    private void loadDispatchers(@Named("main_config") JsonObject config) {
-        Arrays.stream(ReportDispatch.values()).forEach(reportDispatch -> reportDispatch.getInfo().load(config));
+    private void loadDispatchers(ConfigManager manager) {
+        Arrays.stream(ReportDispatch.values()).forEach(reportDispatch -> reportDispatch.getInfo().load(
+                manager.getConfig()));
     }
 
     public void dispatch(ReportDispatch dispatchTarget, Report report, Bug... bugs) {

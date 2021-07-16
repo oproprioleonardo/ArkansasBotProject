@@ -1,14 +1,10 @@
 package com.leonardo.arkansasproject.listeners;
 
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.leonardo.arkansasproject.dispatchers.Dispatcher;
 import com.leonardo.arkansasproject.dispatchers.ReportDispatch;
 import com.leonardo.arkansasproject.dispatchers.ReportDispatchInfo;
+import com.leonardo.arkansasproject.managers.ConfigManager;
 import com.leonardo.arkansasproject.managers.ReportProcessingManager;
 import com.leonardo.arkansasproject.models.*;
 import com.leonardo.arkansasproject.services.ReportService;
@@ -33,36 +29,30 @@ import java.util.stream.Collectors;
 
 public class ButtonClickListener extends ListenerAdapter {
 
+    private static final String separator = "XXXX";
     @Inject
     private ReportProcessingManager manager;
     @Inject
     private ReportService service;
     @Inject
     private Dispatcher dispatcher;
-    private Set<BugCategory> categories;
-
     @Inject
-    private void providesBugCategories(@Named(value = "main_config") JsonObject config) {
-        final Gson gson = new GsonBuilder().create();
-        this.categories = Sets.newHashSet();
-        config.getAsJsonArray("categories").deepCopy()
-              .forEach(jsonElement -> this.categories.add(gson.fromJson(jsonElement, BugCategory.class)));
-    }
+    private ConfigManager configManager;
 
     private void buildBugCategoryButton(String pattern, UpdateInteractionAction action, Long id) {
-        this.categories
+        this.configManager.categories
                 .stream()
                 .filter(bugCategory -> bugCategory.getId().equalsIgnoreCase(pattern))
                 .findFirst().ifPresent(bugCategory -> {
             final Set<Component> set = bugCategory.getBugs().stream().map(bug -> Button
-                    .primary(id + "---" + bug.getId(), bug.getDescription())).collect(
+                    .primary(id + separator + bug.getId(), bug.getDescription())).collect(
                     Collectors.toSet());
             action.setActionRow(set).queue();
         });
     }
 
     private void buildBugButton(String pattern, Long id) {
-        this.categories.stream().map(BugCategory::getBugs).reduce((bugs, bugs2) -> {
+        this.configManager.categories.stream().map(BugCategory::getBugs).reduce((bugs, bugs2) -> {
             bugs.addAll(bugs2);
             return bugs;
         }).flatMap(bugs -> bugs.stream()
@@ -180,9 +170,11 @@ public class ButtonClickListener extends ListenerAdapter {
                             this.service.read(id).invoke(report -> {
                                 final MessageAction action =
                                         message.editMessage(Commons.buildInfoMsgFrom(report, user).build());
-                                final Set<Component> set = this.categories.stream().map(bugCategory -> Button
-                                        .primary(id + "---" + bugCategory.getId(), bugCategory.getLabel())).collect(
-                                        Collectors.toSet());
+                                final Set<Component> set =
+                                        this.configManager.categories.stream().map(bugCategory -> Button
+                                                .primary(id + separator + bugCategory.getId(), bugCategory.getLabel()))
+                                                                     .collect(
+                                                                             Collectors.toSet());
                                 action.setActionRow(set).queue();
                             }).await().indefinitely();
                             return;
@@ -194,11 +186,11 @@ public class ButtonClickListener extends ListenerAdapter {
                     }
                     message.delete().queue();
                 }
-            } else if (componentId.contains("---") && componentId.split("---").length == 2) {
-                final String[] args = componentId.split("---");
+            } else if (componentId.contains(separator) && componentId.split(separator).length == 2) {
+                final String[] args = componentId.split(separator);
                 final long id = Long.parseLong(args[0]);
                 final String pattern = args[1];
-                if (this.categories.stream().anyMatch(
+                if (this.configManager.categories.stream().anyMatch(
                         bugCategory -> bugCategory.getId().equalsIgnoreCase(pattern)))
                     this.buildBugCategoryButton(pattern, deferEdit, id);
                 else {

@@ -15,7 +15,17 @@ public enum TemplateMessages {
     NO_ARGS_ATTACH(new EmbedBuilder()
                            .setColor(new Color(59, 56, 209))
                            .addField("Erro:", "Quantidade de argumentos não suportada", false)
-                           .addField("Sugestão de comando:", "&anexar [id] [url] [descrição]", false)
+                           .addField("Sugestão de comando:", "&anexar [reportId] [url] [descrição]", false)
+    ),
+    NO_ARGS_TAGCONTROL(new EmbedBuilder()
+                               .setColor(new Color(59, 56, 209))
+                               .addField("Erro:", "Quantidade de argumentos não suportada", false)
+                               .addField("Sugestão de comando:", "&etiqueta (add/rem) [bugId] [roleId]", false)
+    ),
+    INTERNAL_ERROR(new EmbedBuilder()
+                           .setColor(new Color(215, 1, 1))
+                           .addField("Erro:", "Ocorreu algum erro interno, por favor verifique o console.",
+                                     false)
     ),
     TEXT_LENGTH_NOT_SUPPORTED(new EmbedBuilder()
                                       .setColor(new Color(59, 56, 209))
@@ -39,9 +49,9 @@ public enum TemplateMessages {
                               .setColor(new Color(59, 56, 209))
                               .addField("Erro:", "Não foi possível salvar as alterações.", false)
     ),
-    REPORT_SAVE_SUCCESS(new EmbedBuilder()
-                                .setColor(new Color(59, 56, 209))
-                                .appendDescription("As alterações foram salvas com sucesso.")
+    SAVE_SUCCESS(new EmbedBuilder()
+                         .setColor(new Color(59, 56, 209))
+                         .appendDescription("As alterações foram salvas com sucesso.")
     ),
     REPORT_SUCCESS(new EmbedBuilder()
                            .setColor(new Color(59, 56, 209))
