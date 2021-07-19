@@ -1,20 +1,19 @@
 package com.leonardo.arkansasproject.executors;
 
 import com.google.inject.Inject;
+import com.leonardo.arkansasproject.entities.Report;
 import com.leonardo.arkansasproject.managers.ReportProcessingManager;
-import com.leonardo.arkansasproject.models.Report;
-import com.leonardo.arkansasproject.models.ReportProcessing;
-import com.leonardo.arkansasproject.utils.TemplateMessages;
+import com.leonardo.arkansasproject.report.ReportProcessing;
+import com.leonardo.arkansasproject.utils.TemplateMessage;
 import com.leonardo.arkansasproject.validators.TextValidator;
+import com.leonardo.arkansasproject.validators.exceptions.ArkansasException;
 import lombok.NoArgsConstructor;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
-
-import java.util.concurrent.TimeUnit;
 
 @CommandExecutor(aliases = {"report", "reportar"})
 @NoArgsConstructor
@@ -32,30 +31,23 @@ public class ReportCmdExecutor implements Executor {
                    .queue();
             return;
         }
-        if (args.length == 0) {
-            channel.sendMessage(TemplateMessages.NO_ARGS_REPORT.getMessageEmbed()).complete().delete()
-                   .queueAfter(12, TimeUnit.SECONDS);
-            return;
-        }
+
         final String title = String.join(" ", args);
-        if (!TextValidator.characterLength(title)) {
-            channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed()).complete().delete()
-                   .queueAfter(12, TimeUnit.SECONDS);
+        try {
+            TextValidator.hasArgsOrThrow(args, 1, TemplateMessage.NO_ARGS_REPORT);
+            TextValidator.hasCharLenghtOrThrow(title);
+        } catch (ArkansasException e) {
+            e.throwMessage(channel);
             return;
         }
-        final EmbedBuilder builder = TemplateMessages.TEMPLATE_PROCESSING_REPORT.getEmbedBuilder();
+
         final MessageBuilder messageBuilder = new MessageBuilder();
-        builder.setAuthor(sender.getAsTag() + " (" + sender.getId() + ")");
-        builder
-                .appendDescription("[")
-                .appendDescription(title)
-                .appendDescription("](https://github.com/LeonardoCod3r) \n")
-                .appendDescription("\n");
-        messageBuilder.setEmbed(builder.build());
         final Report report = new Report();
         report.setUserId(sender.getId());
         report.setTitle(title);
         final ReportProcessing reportProcessing = new ReportProcessing(report);
+        final MessageEmbed embed = reportProcessing.buildMessage(sender);
+        messageBuilder.setEmbed(embed);
         reportProcessing.message =
                 channel
                         .sendMessage(messageBuilder.build())

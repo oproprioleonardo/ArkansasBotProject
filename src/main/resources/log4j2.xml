@@ -4,7 +4,7 @@
         <Console name="STDOUT" target="SYSTEM_OUT">
             <PatternLayout>
                 <pattern>
-                    [%highlight{%-5level}] %d{yyyy-MM-dd HH:mm:ss} [%t] %c{1} - %msg%n
+                    [%highlight{%-5level} %d{yyyy-MM-dd HH:mm:ss}] [%t] %c{1} - %msg%n
                 </pattern>>
             </PatternLayout>
         </Console>
@@ -13,7 +13,7 @@
               filePattern="./botlogs/%d{dd-MM-yyyy_HH-mm}.log.gz"
               ignoreExceptions="false">
             <PatternLayout>
-                <Pattern>{%-5level} %d{yyyy-MM-dd HH:mm:ss} [%t] %c{1} - %msg%n</Pattern>
+                <Pattern>[{%-5level} %d{yyyy-MM-dd HH:mm:ss}] [%t] %c{1} - %msg%n</Pattern>
             </PatternLayout>
             <Policies>
                 <OnStartupTriggeringPolicy />

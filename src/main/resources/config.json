@@ -1,9 +1,4 @@
 {
-  "CLIENT_TOKEN": "YOUR_TOKEN_HERE",
-  "ACTIVE_REPORTS_CHANNEL": "ID_HERE",
-  "ACCEPTED_REPORTS_CHANNEL": "ID_HERE",
-  "ARCHIVED_REPORTS_CHANNEL": "ID_HERE",
-  "REFUSED_REPORTS_CHANNEL": "ID_HERE",
   "categories": [
     {
       "id": "report-discord",

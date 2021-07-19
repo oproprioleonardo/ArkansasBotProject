@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.awt.*;
 
-public enum TemplateMessages {
+public enum TemplateMessage {
 
     NO_ARGS_REPORT(new EmbedBuilder()
                            .setColor(new Color(59, 56, 209))
@@ -84,7 +84,7 @@ public enum TemplateMessages {
 
     private final EmbedBuilder embedBuilder;
 
-    TemplateMessages(EmbedBuilder embedBuilder) {
+    TemplateMessage(EmbedBuilder embedBuilder) {
         this.embedBuilder = embedBuilder;
     }
 

@@ -1,4 +1,4 @@
-package com.leonardo.arkansasproject.models;
+package com.leonardo.arkansasproject.report;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;

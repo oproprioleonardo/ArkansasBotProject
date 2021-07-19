@@ -1,6 +1,6 @@
 package com.leonardo.arkansasproject.dispatchers;
 
-import com.google.gson.JsonObject;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.awt.*;
 
@@ -30,6 +30,6 @@ public interface ReportDispatchInfo {
 
     boolean isLoaded();
 
-    void load(JsonObject config);
+    void load(Dotenv dotenv);
 
 }

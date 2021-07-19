@@ -11,6 +11,7 @@ import com.leonardo.arkansasproject.listeners.MessageReceivedListener;
 import com.leonardo.arkansasproject.managers.ConfigManager;
 import com.leonardo.arkansasproject.managers.ReportProcessingManager;
 import com.leonardo.arkansasproject.services.ReportService;
+import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import org.apache.logging.log4j.LogManager;
@@ -38,6 +39,8 @@ public class Bot {
     private Dispatcher dispatcher;
     @Inject
     private ConfigManager configManager;
+    @Inject
+    private Dotenv dotenv;
 
     public Bot() {
         instance = this;
@@ -46,7 +49,7 @@ public class Bot {
             this.injector.injectMembers(this);
         } catch (Exception e) {
             e.printStackTrace();
-            LogManager.getRootLogger().info("Configure seus dados em /botconfig/config.json");
+            LogManager.getRootLogger().info("Configure seus dados em /botconfig/.env");
             System.exit(0);
             return;
         }

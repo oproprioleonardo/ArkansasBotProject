@@ -1,6 +1,6 @@
 package com.leonardo.arkansasproject.dispatchers;
 
-import com.leonardo.arkansasproject.models.ReportStatus;
+import com.leonardo.arkansasproject.report.ReportStatus;
 
 public enum ReportDispatch {
 

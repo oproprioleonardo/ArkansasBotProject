@@ -1,4 +1,4 @@
-package com.leonardo.arkansasproject.models;
+package com.leonardo.arkansasproject.dispatchers;
 
 import lombok.Data;
 

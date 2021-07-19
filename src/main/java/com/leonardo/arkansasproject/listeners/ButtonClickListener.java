@@ -1,15 +1,15 @@
 package com.leonardo.arkansasproject.listeners;
 
 import com.google.inject.Inject;
-import com.leonardo.arkansasproject.dispatchers.Dispatcher;
-import com.leonardo.arkansasproject.dispatchers.ReportDispatch;
-import com.leonardo.arkansasproject.dispatchers.ReportDispatchInfo;
+import com.leonardo.arkansasproject.dispatchers.*;
+import com.leonardo.arkansasproject.entities.Report;
 import com.leonardo.arkansasproject.managers.ConfigManager;
 import com.leonardo.arkansasproject.managers.ReportProcessingManager;
-import com.leonardo.arkansasproject.models.*;
+import com.leonardo.arkansasproject.report.ReportProcessing;
+import com.leonardo.arkansasproject.report.ReportStatus;
 import com.leonardo.arkansasproject.services.ReportService;
 import com.leonardo.arkansasproject.utils.Commons;
-import com.leonardo.arkansasproject.utils.TemplateMessages;
+import com.leonardo.arkansasproject.utils.TemplateMessage;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -98,7 +98,7 @@ public class ButtonClickListener extends ListenerAdapter {
             final ReportProcessing reportProcessing = manager.get(user.getIdLong());
             final Report report = reportProcessing.getReport();
             if (report.getSteps().isEmpty()) {
-                channel.sendMessage(TemplateMessages.NO_STEPS.getMessageEmbed()).complete().delete()
+                channel.sendMessage(TemplateMessage.NO_STEPS.getMessageEmbed()).complete().delete()
                        .queueAfter(12, TimeUnit.SECONDS);
             } else {
                 message.delete().queue();

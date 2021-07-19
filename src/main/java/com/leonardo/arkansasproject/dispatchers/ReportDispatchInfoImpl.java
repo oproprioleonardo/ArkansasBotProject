@@ -1,6 +1,6 @@
 package com.leonardo.arkansasproject.dispatchers;
 
-import com.google.gson.JsonObject;
+import io.github.cdimascio.dotenv.Dotenv;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,8 +25,8 @@ public class ReportDispatchInfoImpl implements ReportDispatchInfo {
         this.colorMessage = colorMessage;
     }
 
-    public void load(JsonObject config) {
-        this.channelId = config.get(getRouteInConfig()).getAsString();
+    public void load(Dotenv dotenv) {
+        this.channelId = dotenv.get(getRouteInConfig());
         this.loaded = true;
     }
 }

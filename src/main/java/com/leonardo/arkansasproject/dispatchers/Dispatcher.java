@@ -2,10 +2,9 @@ package com.leonardo.arkansasproject.dispatchers;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.leonardo.arkansasproject.managers.ConfigManager;
-import com.leonardo.arkansasproject.models.Bug;
-import com.leonardo.arkansasproject.models.Report;
+import com.leonardo.arkansasproject.entities.Report;
 import com.leonardo.arkansasproject.utils.Commons;
+import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
@@ -26,9 +25,9 @@ public class Dispatcher {
     private JDA jda;
 
     @Inject
-    private void loadDispatchers(ConfigManager manager) {
-        Arrays.stream(ReportDispatch.values()).forEach(reportDispatch -> reportDispatch.getInfo().load(
-                manager.getConfig()));
+    private void loadDispatchers(Dotenv dotenv) {
+        Arrays.stream(ReportDispatch.values())
+              .forEach(reportDispatch -> reportDispatch.getInfo().load(dotenv));
     }
 
     public void dispatch(ReportDispatch dispatchTarget, Report report, Bug... bugs) {
@@ -47,7 +46,8 @@ public class Dispatcher {
                 final Bug bug = bugs[0];
                 final String[] roles = bug.getRoles().toArray(new String[]{});
                 final Optional<String> optional =
-                        Arrays.stream(roles).map(s -> Objects.requireNonNull(jda.getRoleById(s)).getAsMention())
+                        Arrays.stream(roles).map(s -> Objects
+                                .requireNonNull(jda.getRoleById(s)).getAsMention())
                               .reduce((s, s2) -> s + " " + s2);
                 if (optional.isPresent()) {
                     action = action.allowedMentions(

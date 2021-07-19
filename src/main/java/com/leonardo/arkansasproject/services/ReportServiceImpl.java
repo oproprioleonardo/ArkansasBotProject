@@ -2,7 +2,7 @@ package com.leonardo.arkansasproject.services;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.leonardo.arkansasproject.models.Report;
+import com.leonardo.arkansasproject.entities.Report;
 import com.leonardo.arkansasproject.repositories.ReportRepository;
 import io.smallrye.mutiny.Uni;
 

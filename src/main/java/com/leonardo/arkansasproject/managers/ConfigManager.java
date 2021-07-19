@@ -5,8 +5,8 @@ import com.google.gson.*;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.leonardo.arkansasproject.Bot;
-import com.leonardo.arkansasproject.models.Bug;
-import com.leonardo.arkansasproject.models.BugCategory;
+import com.leonardo.arkansasproject.dispatchers.Bug;
+import com.leonardo.arkansasproject.dispatchers.BugCategory;
 import lombok.Getter;
 
 import java.io.File;

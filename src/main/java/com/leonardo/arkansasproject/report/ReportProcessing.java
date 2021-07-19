@@ -1,5 +1,6 @@
-package com.leonardo.arkansasproject.models;
+package com.leonardo.arkansasproject.report;
 
+import com.leonardo.arkansasproject.entities.Report;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,6 +1,6 @@
 package com.leonardo.arkansasproject.utils;
 
-import com.leonardo.arkansasproject.models.Report;
+import com.leonardo.arkansasproject.entities.Report;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
 

@@ -3,13 +3,14 @@ package com.leonardo.arkansasproject.listeners;
 import com.google.inject.Inject;
 import com.leonardo.arkansasproject.dispatchers.Dispatcher;
 import com.leonardo.arkansasproject.dispatchers.ReportDispatch;
+import com.leonardo.arkansasproject.entities.Report;
 import com.leonardo.arkansasproject.managers.ReportProcessingManager;
-import com.leonardo.arkansasproject.models.Report;
-import com.leonardo.arkansasproject.models.ReportProcessing;
+import com.leonardo.arkansasproject.report.ReportProcessing;
 import com.leonardo.arkansasproject.services.ReportService;
 import com.leonardo.arkansasproject.utils.Commons;
-import com.leonardo.arkansasproject.utils.TemplateMessages;
+import com.leonardo.arkansasproject.utils.TemplateMessage;
 import com.leonardo.arkansasproject.validators.TextValidator;
+import com.leonardo.arkansasproject.validators.exceptions.ArkansasException;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -18,7 +19,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.Button;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 public class MessageReceivedListener extends ListenerAdapter {
 
@@ -43,9 +43,10 @@ public class MessageReceivedListener extends ListenerAdapter {
             if (eventMessage.isFromGuild()) eventMessage.delete().queue();
             switch (repProcess.getProcessingState()) {
                 case ATTACH_STEP_BY_STEP:
-                    if (!TextValidator.characterLength(contentRaw, 80)) {
-                        channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed())
-                               .complete().delete().queueAfter(12, TimeUnit.SECONDS);
+                    try {
+                        TextValidator.hasCharLenghtOrThrow(contentRaw, 80);
+                    } catch (ArkansasException e) {
+                        e.throwMessage(channel);
                         return;
                     }
                     Arrays.stream(contentRaw.split("\n")).forEach(s -> {
@@ -54,9 +55,10 @@ public class MessageReceivedListener extends ListenerAdapter {
                     repProcess.updateMessage(author);
                     break;
                 case ATTACH_EXPECTED_RESULT:
-                    if (!TextValidator.characterLength(contentRaw, 60)) {
-                        channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed())
-                               .complete().delete().queueAfter(12, TimeUnit.SECONDS);
+                    try {
+                        TextValidator.hasCharLenghtOrThrow(contentRaw, 60);
+                    } catch (ArkansasException e) {
+                        e.throwMessage(channel);
                         return;
                     }
                     report.setExpectedOutcome(contentRaw);
@@ -65,9 +67,10 @@ public class MessageReceivedListener extends ListenerAdapter {
                                                                                      .complete());
                     break;
                 case ATTACH_ACTUAL_RESULT:
-                    if (!TextValidator.characterLength(contentRaw, 60)) {
-                        channel.sendMessage(TemplateMessages.TEXT_LENGTH_NOT_SUPPORTED.getMessageEmbed())
-                               .complete().delete().queueAfter(12, TimeUnit.SECONDS);
+                    try {
+                        TextValidator.hasCharLenghtOrThrow(contentRaw, 60);
+                    } catch (ArkansasException e) {
+                        e.throwMessage(channel);
                         return;
                     }
                     report.setActualResult(contentRaw);
@@ -79,11 +82,11 @@ public class MessageReceivedListener extends ListenerAdapter {
                     repProcess.next(author, (rp, b) -> this.service
                             .create(report).invoke(() -> {
                                                        rp.message.delete().queue();
-                                                       this.manager.remove(author.getIdLong());
-                                                       channel.sendMessage(TemplateMessages.REPORT_SUCCESS.getMessageEmbed()).queue();
-                                                       channel.sendMessage(Commons.buildInfoMsgFrom(report, author).build()).setActionRow(
-                                                               Button.success("update-report-" + report.getId(), "Atualizar")
-                                                       ).queue();
+                                this.manager.remove(author.getIdLong());
+                                channel.sendMessage(TemplateMessage.REPORT_SUCCESS.getMessageEmbed()).queue();
+                                channel.sendMessage(Commons.buildInfoMsgFrom(report, author).build()).setActionRow(
+                                        Button.success("update-report-" + report.getId(), "Atualizar")
+                                ).queue();
                                                        this.dispatcher.dispatch(ReportDispatch.ACTIVATED, report);
                                                    }
                             ).await().indefinitely());

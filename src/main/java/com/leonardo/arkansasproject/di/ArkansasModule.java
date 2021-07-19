@@ -10,6 +10,7 @@ import com.leonardo.arkansasproject.repositories.ReportRepository;
 import com.leonardo.arkansasproject.repositories.ReportRepositoryImpl;
 import com.leonardo.arkansasproject.services.ReportService;
 import com.leonardo.arkansasproject.services.ReportServiceImpl;
+import io.github.cdimascio.dotenv.Dotenv;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.JDA;
@@ -49,14 +50,21 @@ public class ArkansasModule extends AbstractModule {
         return manager;
     }
 
+    @Provides
+    @Singleton
+    public Dotenv providesDotenv() {
+        return Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().directory("./botconfig/").load();
+    }
+
     @SneakyThrows
     @Provides
     @Singleton
-    public JDA providesJDA(ConfigManager manager) {
-        final JDABuilder jdaBuilder = JDABuilder.createDefault(manager.getConfig().get("CLIENT_TOKEN").getAsString());
+    public JDA providesJDA(Dotenv dotenv) {
+        final JDABuilder jdaBuilder = JDABuilder.createDefault(dotenv.get("AUTH_SECRET"));
         jdaBuilder.disableCache(CacheFlag.VOICE_STATE);
         jdaBuilder.setActivity(Activity.watching("Hylex Servers"));
         jdaBuilder.setAutoReconnect(true);
         return jdaBuilder.build();
     }
+
 }

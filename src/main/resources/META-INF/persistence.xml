@@ -5,7 +5,7 @@
 
     <persistence-unit name="mainProcessor">
         <provider>org.hibernate.reactive.provider.ReactivePersistenceProvider</provider>
-        <class>com.leonardo.arkansasproject.models.Report</class>
+        <class>com.leonardo.arkansasproject.entities.Report</class>
         <properties>
             <property name="hibernate.connection.url"
                       value="jdbc:mysql://localhost:3306/main?useSSL=false&amp;useTimezone=true&amp;serverTimezone=UTC"/>

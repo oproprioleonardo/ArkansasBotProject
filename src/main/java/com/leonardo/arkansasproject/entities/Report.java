@@ -1,7 +1,8 @@
-package com.leonardo.arkansasproject.models;
+package com.leonardo.arkansasproject.entities;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.leonardo.arkansasproject.report.ReportStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
