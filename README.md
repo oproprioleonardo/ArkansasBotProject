@@ -1,6 +1,7 @@
 # Arkansas Project
 
 Este projeto é referente a criação de um 'bot' de relatórios de falhas, gravado em Java.
+Não me julgue, este é meu primeiro projeto utilizando o Discord JDA.
 
 ## Recursos
 
