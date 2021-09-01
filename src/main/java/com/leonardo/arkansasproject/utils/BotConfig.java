@@ -1,4 +1,4 @@
-package com.leonardo.arkansasproject.managers;
+package com.leonardo.arkansasproject.utils;
 
 import com.google.common.collect.Sets;
 import com.google.gson.*;
@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Singleton
-public class ConfigManager {
+public class BotConfig {
 
     private final String path = "botconfig/config.json";
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -34,12 +34,12 @@ public class ConfigManager {
         try {
             if (!file.exists())
                 Files.copy(this.getClass().getResourceAsStream("/config.json"), file.toPath());
-            this.config = JsonParser.parseReader(new FileReader(file.getAbsolutePath())).getAsJsonObject();
+            this.config = JsonParser.parseReader(new FileReader(file.getAbsolutePath())).getAsJsonObject().deepCopy();
         } catch (IOException ignored) {
         }
         this.categories = Sets.newHashSet();
-        config.getAsJsonArray("categories").deepCopy()
-              .forEach(jsonElement -> this.categories.add(gson.fromJson(jsonElement, BugCategory.class)));
+        this.config.getAsJsonArray("categories").deepCopy()
+                   .forEach(jsonElement -> this.categories.add(gson.fromJson(jsonElement, BugCategory.class)));
     }
 
 

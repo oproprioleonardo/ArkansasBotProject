@@ -1,4 +1,7 @@
 {
+  "admin": [
+    "849627467878891554"
+  ],
   "categories": [
     {
       "id": "report-discord",
@@ -7,13 +10,17 @@
         {
           "id": "report-discord-bot",
           "description": "Problemas com bots",
-          "roles": ["849627467853332510"],
+          "roles": [
+            "849627467853332510"
+          ],
           "tag": "Discord - Problemas com bots"
         },
         {
           "id": "report-discord-chat",
           "description": "Problemas com chats",
-          "roles": ["849627467853332510"],
+          "roles": [
+            "849627467853332510"
+          ],
           "tag": "Discord - Problemas com chats"
         }
       ]
@@ -25,19 +32,25 @@
         {
           "id": "report-webforum-backend",
           "description": "Backend",
-          "roles": ["849627467853332510"],
+          "roles": [
+            "849627467853332510"
+          ],
           "tag": "Web/Fórum - Backend"
         },
         {
           "id": "report-webforum-frontend",
           "description": "Frontend",
-          "roles": ["849627467853332510"],
+          "roles": [
+            "849627467853332510"
+          ],
           "tag": "Web/Fórum - Frontend"
         },
         {
           "id": "report-webforum-paymentsystem",
           "description": "Sistema de pagamentos",
-          "roles": ["849627467853332510"],
+          "roles": [
+            "849627467853332510"
+          ],
           "tag": "Web/Fórum - Sistema de pagamentos"
         }
       ]
@@ -49,19 +62,25 @@
         {
           "id": "report-minecraft-minigames",
           "description": "MiniGames",
-          "roles": ["849627467853332510"],
+          "roles": [
+            "849627467853332510"
+          ],
           "tag": "Minecraft - Minigames"
         },
         {
           "id": "report-minecraft-factions",
           "description": "Factions",
-          "roles": ["849627467853332510"],
+          "roles": [
+            "849627467853332510"
+          ],
           "tag": "Minecraft - Factions"
         },
         {
           "id": "report-minecraft-rankup",
           "description": "RankUp",
-          "roles": ["849627467853332510"],
+          "roles": [
+            "849627467853332510"
+          ],
           "tag": "Minecraft - RankUp"
         }
       ]

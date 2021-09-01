@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.leonardo.discord</groupId>
     <artifactId>Arkansas</artifactId>
-    <version>0.1.1-beta</version>
+    <version>0.2-beta</version>
     <inceptionYear>2021</inceptionYear>
     <licenses>
         <license>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.3.0_277</version>
+            <version>4.3.0_310</version>
             <exclusions>
                 <exclusion>
                     <groupId>club.minnced</groupId>

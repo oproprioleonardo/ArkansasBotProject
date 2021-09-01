@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.requests.RestAction;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -46,11 +47,12 @@ public class Report implements Serializable {
     private String expectedOutcome;
     private String actualResult;
     private String serverName;
+    private String lastOperator;
     @Enumerated
     private ReportStatus status = ReportStatus.ACTIVATED;
 
-    public User getAuthor(JDA jda) {
-        return jda.retrieveUserById(userId).complete();
+    public RestAction<User> getAuthor(JDA jda) {
+        return jda.retrieveUserById(userId);
     }
 
     public void appendStep(String step) {

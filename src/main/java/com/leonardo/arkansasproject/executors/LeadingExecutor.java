@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import com.google.inject.Singleton;
 import com.leonardo.arkansasproject.Bot;
-import com.leonardo.arkansasproject.validators.TextValidator;
+import com.leonardo.arkansasproject.validators.Validators;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -22,7 +22,7 @@ public class LeadingExecutor extends ListenerAdapter {
     private final HashMap<CommandExecutor, Executor> executors = Maps.newHashMap();
 
     @SuppressWarnings("UnstableApiUsage")
-    public void run(Bot bot) {
+    public void run() {
         try {
             ClassPath.from(this.getClass().getClassLoader())
                      .getAllClasses()
@@ -31,7 +31,7 @@ public class LeadingExecutor extends ListenerAdapter {
                                            .equalsIgnoreCase("com.leonardo.arkansasproject.executors"))
                      .filter(clazz -> clazz.load().isAnnotationPresent(CommandExecutor.class))
                      .map(classInfo -> {
-                         final Object instance = bot.getInjector().getInstance(classInfo.load());
+                         final Object instance = Bot.getInjector().getInstance(classInfo.load());
                          return Maps.immutableEntry(classInfo.load().getAnnotation(CommandExecutor.class),
                                                     (Executor) instance);
                      })
@@ -47,7 +47,7 @@ public class LeadingExecutor extends ListenerAdapter {
         final String text = message.getContentRaw();
         final String[] args = text.split(" ");
         final String cmd = args[0];
-        if (TextValidator.isBotCommand(cmd)) {
+        if (Validators.isBotCommand(cmd)) {
             final List<String> arguments = Lists.newArrayList(args);
             arguments.remove(0);
             this.executors.entrySet().stream()

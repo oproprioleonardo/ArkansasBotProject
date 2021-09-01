@@ -8,9 +8,9 @@ import com.leonardo.arkansasproject.dispatchers.Dispatcher;
 import com.leonardo.arkansasproject.executors.LeadingExecutor;
 import com.leonardo.arkansasproject.listeners.ButtonClickListener;
 import com.leonardo.arkansasproject.listeners.MessageReceivedListener;
-import com.leonardo.arkansasproject.managers.ConfigManager;
 import com.leonardo.arkansasproject.managers.ReportProcessingManager;
 import com.leonardo.arkansasproject.services.ReportService;
+import com.leonardo.arkansasproject.utils.BotConfig;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
@@ -22,7 +22,8 @@ import org.hibernate.reactive.mutiny.Mutiny;
 public class Bot {
 
     private static Bot instance;
-    private Injector injector;
+    @Getter
+    private static Injector injector;
     @Inject
     private CacheManager cacheManager;
     @Inject
@@ -38,32 +39,33 @@ public class Bot {
     @Inject
     private Dispatcher dispatcher;
     @Inject
-    private ConfigManager configManager;
+    private BotConfig botConfig;
     @Inject
     private Dotenv dotenv;
 
     public Bot() {
         instance = this;
         try {
-            this.injector = Guice.createInjector(ArkansasModule.of(this));
-            this.injector.injectMembers(this);
+            injector = Guice.createInjector(ArkansasModule.of(this));
+            injector.injectMembers(this);
         } catch (Exception e) {
             e.printStackTrace();
             LogManager.getRootLogger().info("Configure seus dados em /botconfig/.env");
             System.exit(0);
             return;
         }
+        this.reportProcessingManager.init(this.cacheManager);
         this.jda.addEventListener(this.leadingExecutor);
         this.jda.addEventListener(
                 this.getInstance(MessageReceivedListener.class),
                 this.getInstance(ButtonClickListener.class)
         );
-        this.leadingExecutor.run(this);
-        this.reportProcessingManager.init(this.cacheManager);
+        this.leadingExecutor.run();
+
     }
 
     public <O> O getInstance(Class<O> clazz) {
-        return this.injector.getInstance(clazz);
+        return injector.getInstance(clazz);
     }
 
 }

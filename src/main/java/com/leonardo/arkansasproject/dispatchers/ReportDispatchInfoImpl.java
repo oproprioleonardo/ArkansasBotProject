@@ -15,10 +15,9 @@ import java.awt.*;
 public class ReportDispatchInfoImpl implements ReportDispatchInfo {
 
     @Setter(value = AccessLevel.NONE)
-    private boolean loaded = false;
     private String channelId;
     private String routeInConfig;
-    private Color colorMessage = new Color(59, 56, 209);
+    private Color colorMessage = new Color(102, 180, 241);
 
     public ReportDispatchInfoImpl(@NotNull String routeInConfig, @NotNull Color colorMessage) {
         this.routeInConfig = routeInConfig;
@@ -27,6 +26,5 @@ public class ReportDispatchInfoImpl implements ReportDispatchInfo {
 
     public void load(Dotenv dotenv) {
         this.channelId = dotenv.get(getRouteInConfig());
-        this.loaded = true;
     }
 }

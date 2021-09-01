@@ -5,11 +5,15 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.leonardo.arkansasproject.Bot;
 import com.leonardo.arkansasproject.dispatchers.Dispatcher;
-import com.leonardo.arkansasproject.managers.ConfigManager;
+import com.leonardo.arkansasproject.executors.CancelCmdExecutor;
+import com.leonardo.arkansasproject.executors.ReportCmdExecutor;
+import com.leonardo.arkansasproject.listeners.ExpireEventListener;
+import com.leonardo.arkansasproject.listeners.MessageReceivedListener;
 import com.leonardo.arkansasproject.repositories.ReportRepository;
-import com.leonardo.arkansasproject.repositories.ReportRepositoryImpl;
+import com.leonardo.arkansasproject.repositories.impl.ReportRepositoryImpl;
 import com.leonardo.arkansasproject.services.ReportService;
-import com.leonardo.arkansasproject.services.ReportServiceImpl;
+import com.leonardo.arkansasproject.services.impl.ReportServiceImpl;
+import com.leonardo.arkansasproject.utils.BotConfig;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -30,10 +34,14 @@ public class ArkansasModule extends AbstractModule {
 
     protected void configure() {
         bind(Bot.class).toInstance(this.bot);
-        bind(ConfigManager.class);
+        bind(BotConfig.class);
         bind(ReportRepository.class).to(ReportRepositoryImpl.class);
         bind(ReportService.class).to(ReportServiceImpl.class);
         bind(Dispatcher.class);
+        bind(ExpireEventListener.class);
+        bind(ReportCmdExecutor.class);
+        bind(MessageReceivedListener.class);
+        bind(CancelCmdExecutor.class);
     }
 
     @Provides
@@ -62,7 +70,7 @@ public class ArkansasModule extends AbstractModule {
     public JDA providesJDA(Dotenv dotenv) {
         final JDABuilder jdaBuilder = JDABuilder.createDefault(dotenv.get("AUTH_SECRET"));
         jdaBuilder.disableCache(CacheFlag.VOICE_STATE);
-        jdaBuilder.setActivity(Activity.watching("Hylex Servers"));
+        jdaBuilder.setActivity(Activity.watching("Hylex Equipe"));
         jdaBuilder.setAutoReconnect(true);
         return jdaBuilder.build();
     }

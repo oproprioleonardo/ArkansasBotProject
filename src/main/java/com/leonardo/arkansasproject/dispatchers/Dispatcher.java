@@ -7,14 +7,13 @@ import com.leonardo.arkansasproject.utils.Commons;
 import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.components.Button;
-import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.requests.RestAction;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -32,16 +31,12 @@ public class Dispatcher {
 
     public void dispatch(ReportDispatch dispatchTarget, Report report, Bug... bugs) {
         final ReportDispatchInfo destination = dispatchTarget.getInfo();
-        final User user = report.getAuthor(jda);
-        final Optional<TextChannel> channel =
-                Optional.ofNullable(jda.getTextChannelById(destination.getChannelId()));
-        final EmbedBuilder builder = Commons.buildInfoMsgFrom(report, user, destination.getColorMessage());
-        channel.ifPresent(textChannel -> {
-            MessageAction action = textChannel
-                    .sendMessage(builder.build())
-                    .setActionRow(
-                            Button.success("update-report-" + report.getId(), "Atualizar"),
-                            Button.secondary("update-report-status-" + report.getId(), "Editar status"));
+        report.getAuthor(jda).and(jda.retrieveUserById(report.getLastOperator()), (user, user2) -> {
+            final TextChannel channel = Optional.ofNullable(jda.getTextChannelById(destination.getChannelId())).get();
+            final EmbedBuilder builder = Commons.buildInfoMsgFrom(report, user, user2, destination.getColorMessage());
+            final MessageBuilder messageBuilder = new MessageBuilder(builder);
+            messageBuilder.allowMentions(Message.MentionType.USER, Message.MentionType.ROLE);
+            if (report.getLastOperator() != null) messageBuilder.mentionUsers(report.getLastOperator());
             if (bugs.length > 0) {
                 final Bug bug = bugs[0];
                 final String[] roles = bug.getRoles().toArray(new String[]{});
@@ -49,14 +44,16 @@ public class Dispatcher {
                         Arrays.stream(roles).map(s -> Objects
                                 .requireNonNull(jda.getRoleById(s)).getAsMention())
                               .reduce((s, s2) -> s + " " + s2);
-                if (optional.isPresent()) {
-                    action = action.allowedMentions(
-                            EnumSet.of(Message.MentionType.ROLE))
-                                   .mentionRoles(roles)
-                                   .content(optional.get() + ", " + bug.getTag());
-                }
+                optional.ifPresent(s -> messageBuilder
+                        .mentionRoles(roles)
+                        .setContent("Etiqueta de " + s + ", " + bug.getTag()));
             }
-            action.queue();
-        });
+            return channel
+                    .sendMessage(messageBuilder.build())
+                    .setActionRow(
+                            Button.success("update-report-" + report.getId(), "Atualizar"),
+                            Button.secondary("update-report-status-" + report.getId(), "Editar status"));
+        }).queue(RestAction::queue);
+
     }
 }

@@ -1,9 +1,9 @@
 package com.leonardo.arkansasproject.executors;
 
 import com.google.inject.Inject;
-import com.leonardo.arkansasproject.managers.ConfigManager;
+import com.leonardo.arkansasproject.utils.BotConfig;
 import com.leonardo.arkansasproject.utils.TemplateMessage;
-import com.leonardo.arkansasproject.validators.TextValidator;
+import com.leonardo.arkansasproject.validators.Validators;
 import com.leonardo.arkansasproject.validators.exceptions.ArkansasException;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -16,13 +16,14 @@ import java.util.concurrent.TimeUnit;
 public class RoleControlCmdExecutor implements Executor {
 
     @Inject
-    private ConfigManager configManager;
+    private BotConfig botConfig;
 
     @Override
     public void exec(MessageReceivedEvent mre, User sender, String[] args) {
         final MessageChannel channel = mre.getChannel();
         try {
-            TextValidator.hasArgsOrThrow(args, 3, TemplateMessage.NO_ARGS_TAGCONTROL);
+            Validators.isAdmin(mre, botConfig);
+            Validators.hasArgsOrThrow(args, 3, TemplateMessage.NO_ARGS_TAGCONTROL);
         } catch (ArkansasException e) {
             e.throwMessage(channel);
             return;
@@ -30,15 +31,15 @@ public class RoleControlCmdExecutor implements Executor {
         final String bugId = args[1];
         final String roleId = args[2];
         if (args[0].equalsIgnoreCase("add")) {
-            this.configManager.addRoleAtBug(bugId, roleId);
+            this.botConfig.addRoleAtBug(bugId, roleId);
         } else if (args[0].equalsIgnoreCase("rem")) {
-            this.configManager.removeRoleAtBug(bugId, roleId);
+            this.botConfig.removeRoleAtBug(bugId, roleId);
         } else return;
-        channel.sendMessage(TemplateMessage.SAVE_SUCCESS.getMessageEmbed()).queue();
+        channel.sendMessageEmbeds(TemplateMessage.SAVE_SUCCESS.getMessageEmbed()).queue();
         try {
-            this.configManager.editConfig();
+            this.botConfig.editConfig();
         } catch (IOException e) {
-            channel.sendMessage(TemplateMessage.INTERNAL_ERROR.getMessageEmbed()).complete().delete()
+            channel.sendMessageEmbeds(TemplateMessage.INTERNAL_ERROR.getMessageEmbed()).complete().delete()
                    .queueAfter(15, TimeUnit.SECONDS);
             e.printStackTrace();
         }

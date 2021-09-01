@@ -16,7 +16,7 @@ public enum ReportDispatch {
     }
 
     public static ReportDispatch fromReportStatus(ReportStatus reportStatus) {
-        return reportStatus != null ? reportStatus : ACTIVATED;
+        return reportStatus != null ? ReportDispatch.valueOf(reportStatus.toString()) : ACTIVATED;
     }
 
     public ReportDispatchInfo getInfo() {

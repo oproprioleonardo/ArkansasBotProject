@@ -7,15 +7,15 @@ import java.awt.*;
 public interface ReportDispatchInfo {
 
     static ReportDispatchInfo asActivatedReport() {
-        return new ReportDispatchInfoImpl("ACTIVATED_REPORTS_CHANNEL", new Color(236, 255, 43));
+        return new ReportDispatchInfoImpl("ACTIVATED_REPORTS_CHANNEL", new Color(255, 255, 101));
     }
 
     static ReportDispatchInfo asRefusedReport() {
-        return new ReportDispatchInfoImpl("REFUSED_REPORTS_CHANNEL", new Color(201, 30, 30));
+        return new ReportDispatchInfoImpl("REFUSED_REPORTS_CHANNEL", new Color(212, 105, 105));
     }
 
     static ReportDispatchInfo asAcceptedReport() {
-        return new ReportDispatchInfoImpl("ACCEPTED_REPORTS_CHANNEL", new Color(40, 239, 32));
+        return new ReportDispatchInfoImpl("ACCEPTED_REPORTS_CHANNEL", new Color(100, 236, 113));
     }
 
     static ReportDispatchInfo asArchivedReport() {
@@ -27,8 +27,6 @@ public interface ReportDispatchInfo {
     String getRouteInConfig();
 
     Color getColorMessage();
-
-    boolean isLoaded();
 
     void load(Dotenv dotenv);
 

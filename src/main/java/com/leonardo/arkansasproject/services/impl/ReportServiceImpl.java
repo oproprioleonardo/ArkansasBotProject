@@ -1,9 +1,10 @@
-package com.leonardo.arkansasproject.services;
+package com.leonardo.arkansasproject.services.impl;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.leonardo.arkansasproject.entities.Report;
 import com.leonardo.arkansasproject.repositories.ReportRepository;
+import com.leonardo.arkansasproject.services.ReportService;
 import io.smallrye.mutiny.Uni;
 
 @Singleton

@@ -3,7 +3,7 @@ package com.leonardo.arkansasproject.executors;
 import com.google.inject.Inject;
 import com.leonardo.arkansasproject.services.ReportService;
 import com.leonardo.arkansasproject.utils.TemplateMessage;
-import com.leonardo.arkansasproject.validators.TextValidator;
+import com.leonardo.arkansasproject.validators.Validators;
 import com.leonardo.arkansasproject.validators.exceptions.ArkansasException;
 import lombok.NoArgsConstructor;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -24,11 +24,11 @@ public class AttachCmdExecutor implements Executor {
         final MessageChannel channel = mre.getChannel();
         String text;
         try {
-            TextValidator.hasArgsOrThrow(args, 3, TemplateMessage.NO_ARGS_ATTACH);
-            TextValidator.isUrlOrThrow(args[1]);
+            Validators.hasArgsOrThrow(args, 3, TemplateMessage.NO_ARGS_ATTACH);
+            Validators.isUrlOrThrow(args[1]);
             final String[] textArgs = Arrays.copyOfRange(args, 2, (args.length));
             text = String.join(" ", textArgs);
-            TextValidator.hasCharLenghtOrThrow(text, 1, 40);
+            Validators.hasCharLenghtOrThrow(text, 1, 40);
         } catch (ArkansasException e) {
             e.throwMessage(channel);
             return;
@@ -36,16 +36,16 @@ public class AttachCmdExecutor implements Executor {
         final long id = Long.parseLong(args[0]);
         this.reportService.read(id)
                           .onItem().ifNull().fail().onFailure()
-                          .invoke(() -> channel.sendMessage(TemplateMessage.NOT_EXISTS_REPORT.getMessageEmbed())
+                          .invoke(() -> channel.sendMessageEmbeds(TemplateMessage.NOT_EXISTS_REPORT.getMessageEmbed())
                                                .queue())
                           .onItem().ifNotNull().call(report -> {
             report.attach(text, args[1]);
             return this.reportService.update(report).onItem().ifNotNull()
                                      .invoke(() -> channel
-                                             .sendMessage(TemplateMessage.SAVE_SUCCESS.getMessageEmbed())
+                                             .sendMessageEmbeds(TemplateMessage.SAVE_SUCCESS.getMessageEmbed())
                                              .queue()).onItem().ifNull().fail().onFailure()
                                      .invoke(() -> channel
-                                             .sendMessage(TemplateMessage.REPORT_SAVE_ERROR.getMessageEmbed())
+                                             .sendMessageEmbeds(TemplateMessage.REPORT_SAVE_ERROR.getMessageEmbed())
                                              .queue());
         }).await().indefinitely();
     }

@@ -27,8 +27,8 @@ public class ReportProcessing {
 
     public MessageEmbed buildMessage(User user) {
         final EmbedBuilder embedBuilder = new EmbedBuilder()
-                .setColor(new Color(59, 56, 209))
-                .appendDescription("**[" + report.getTitle() + "]" + "(https://hylex.me/bugs)**\n")
+                .setColor(new Color(102, 180, 241))
+                .appendDescription("**[" + report.getTitle() + "]" + "(https://equipe.hylex.me/bugs-and-falhas)**\n")
                 .setAuthor(user.getAsTag() + " (" + user.getId() + ")")
                 .appendDescription("\n");
         report.getSteps().forEach(s -> embedBuilder

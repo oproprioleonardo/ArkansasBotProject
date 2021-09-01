@@ -1,12 +1,16 @@
 package com.leonardo.arkansasproject.managers;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.leonardo.arkansasproject.listeners.ExpireEventListener;
 import com.leonardo.arkansasproject.report.ReportProcessing;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheEventListenerConfigurationBuilder;
 import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.ehcache.event.EventType;
 
 import java.time.Duration;
 
@@ -14,8 +18,14 @@ import java.time.Duration;
 public class ReportProcessingManager {
 
     public Cache<Long, ReportProcessing> REPORT_PROCESSING_CACHE;
+    @Inject
+    private ExpireEventListener eventListener;
 
     public void init(CacheManager cacheManager) {
+        final CacheEventListenerConfigurationBuilder listener =
+                CacheEventListenerConfigurationBuilder.newEventListenerConfiguration(eventListener, EventType.EXPIRED)
+                                                      .unordered().synchronous();
+
         this.REPORT_PROCESSING_CACHE = cacheManager
                 .createCache("REPORT_PROCESSING",
                              CacheConfigurationBuilder
@@ -28,7 +38,10 @@ public class ReportProcessingManager {
                                              ExpiryPolicyBuilder
                                                      .timeToIdleExpiration(
                                                              Duration.ofSeconds(
-                                                                     150))));
+                                                                     90)))
+                                     .add(listener));
+
+
     }
 
     public boolean exists(Long userId) {
